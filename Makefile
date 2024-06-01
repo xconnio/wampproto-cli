@@ -1,3 +1,6 @@
+run:
+	go run ./cmd/wampproto
+
 build:
 	go build ./cmd/wampproto
 
