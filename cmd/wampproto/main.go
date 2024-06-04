@@ -1,6 +1,9 @@
 package main
 
 import (
+	"crypto/ed25519"
+	"encoding/base64"
+	"encoding/hex"
 	"fmt"
 	"log"
 	"os"
@@ -23,9 +26,15 @@ type cmd struct {
 
 	output *string
 
-	auth              *kingpin.CmdClause
-	cryptosign        *kingpin.CmdClause
+	auth *kingpin.CmdClause
+
+	cryptosign *kingpin.CmdClause
+
 	generateChallenge *kingpin.CmdClause
+
+	signChallenge *kingpin.CmdClause
+	challenge     *string
+	privateKey    *string
 }
 
 func parseCmd(args []string) (*cmd, error) {
@@ -35,7 +44,7 @@ func parseCmd(args []string) (*cmd, error) {
 	authCommand := app.Command("auth", "Authentication commands.")
 
 	cryptoSignCommand := authCommand.Command("cryptosign", "Commands for cryptosign authentication.")
-
+	signChallengeCommand := cryptoSignCommand.Command("sign-challenge", "Sign a cryptosign challenge.")
 	c := &cmd{
 		output: app.Flag("output", "Format of the output.").Default("hex").Enum(HexFormat, Base64Format),
 
@@ -44,6 +53,10 @@ func parseCmd(args []string) (*cmd, error) {
 		cryptosign: cryptoSignCommand,
 
 		generateChallenge: cryptoSignCommand.Command("generate-challenge", "Generate a cryptosign challenge."),
+
+		signChallenge: signChallengeCommand,
+		challenge:     signChallengeCommand.Flag("challenge", "Challenge to sign.").Required().String(),
+		privateKey:    signChallengeCommand.Flag("private-key", "Private key to sign challenge.").Required().String(),
 	}
 
 	parsedCommand, err := app.Parse(args[1:])
@@ -68,22 +81,52 @@ func Run(args []string) (string, error) {
 			return "", err
 		}
 
-		switch *c.output {
-		case HexFormat:
-			return challenge, nil
+		return formatOutput(*c.output, challenge)
 
-		case Base64Format:
-			base64Str, err := wampprotocli.HexToBase64(challenge)
+	case c.signChallenge.FullCommand():
+		privateKeyBytes, err := hex.DecodeString(*c.privateKey)
+		if err != nil {
+			privateKeyBytes, err = base64.StdEncoding.DecodeString(*c.privateKey)
 			if err != nil {
-				return "", err
+				return "", fmt.Errorf("invalid private-key: must be in either hexadecimal or base64 format")
 			}
-
-			return base64Str, err
 		}
 
+		if len(privateKeyBytes) != 32 && len(privateKeyBytes) != 64 {
+			return "", fmt.Errorf("invalid private-key: must be of length 32 or 64")
+		}
+
+		if len(privateKeyBytes) == 32 {
+			privateKeyBytes = ed25519.NewKeyFromSeed(privateKeyBytes)
+		}
+
+		signedChallenge, err := auth.SignCryptoSignChallenge(*c.challenge, privateKeyBytes)
+		if err != nil {
+			return "", err
+		}
+
+		return formatOutput(*c.output, signedChallenge)
 	}
 
 	return "", nil
+}
+
+func formatOutput(outputFormat, outputString string) (string, error) {
+	switch outputFormat {
+	case HexFormat:
+		return outputString, nil
+
+	case Base64Format:
+		base64Str, err := wampprotocli.HexToBase64(outputString)
+		if err != nil {
+			return "", err
+		}
+
+		return base64Str, err
+
+	default:
+		return "", fmt.Errorf("invalid output format")
+	}
 }
 
 func main() {
