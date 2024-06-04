@@ -33,6 +33,10 @@ type cmd struct {
 	signChallenge *kingpin.CmdClause
 	challenge     *string
 	privateKey    *string
+
+	verifySignature *kingpin.CmdClause
+	signature       *string
+	publicKey       *string
 }
 
 func parseCmd(args []string) (*cmd, error) {
@@ -43,6 +47,7 @@ func parseCmd(args []string) (*cmd, error) {
 
 	cryptoSignCommand := authCommand.Command("cryptosign", "Commands for cryptosign authentication.")
 	signChallengeCommand := cryptoSignCommand.Command("sign-challenge", "Sign a cryptosign challenge.")
+	verifySignatureCommand := cryptoSignCommand.Command("verify-signature", "Verify a cryptosign challenge.")
 	c := &cmd{
 		output: app.Flag("output", "Format of the output.").Default("hex").Enum(HexFormat, Base64Format),
 
@@ -55,6 +60,10 @@ func parseCmd(args []string) (*cmd, error) {
 		signChallenge: signChallengeCommand,
 		challenge:     signChallengeCommand.Flag("challenge", "Challenge to sign.").Required().String(),
 		privateKey:    signChallengeCommand.Flag("private-key", "Private key to sign challenge.").Required().String(),
+
+		verifySignature: verifySignatureCommand,
+		signature:       verifySignatureCommand.Flag("signature", "Signature to verify.").Required().String(),
+		publicKey:       verifySignatureCommand.Flag("public-key", "Public key to verify signature.").Required().String(),
 	}
 
 	parsedCommand, err := app.Parse(args[1:])
@@ -101,6 +110,28 @@ func Run(args []string) (string, error) {
 		}
 
 		return formatOutput(*c.output, signedChallenge)
+
+	case c.verifySignature.FullCommand():
+		publicKeyBytes, err := wampprotocli.DecodeHexOrBase64(*c.publicKey)
+		if err != nil {
+			return "", fmt.Errorf("invalid public-key: %s", err.Error())
+		}
+
+		if len(publicKeyBytes) != 32 {
+			return "", fmt.Errorf("invalid public-key: must be of length 32")
+		}
+
+		isVerified, err := auth.VerifyCryptoSignSignature(*c.signature, publicKeyBytes)
+		if err != nil {
+			return "", err
+		}
+
+		if isVerified {
+			return "Signature verified successfully", nil
+		}
+
+		return "Signature verification failed", nil
+
 	}
 
 	return "", nil
