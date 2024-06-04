@@ -16,8 +16,7 @@ func TestHexToBase64(t *testing.T) {
 			"":                 "",
 		} {
 			result, err := wampprotocli.HexToBase64(hexStr)
-			require.NoError(t, err)
-			require.Equal(t, base64Str, result)
+			wampprotocli.NoErrorEqual(t, err, base64Str, result)
 		}
 	})
 

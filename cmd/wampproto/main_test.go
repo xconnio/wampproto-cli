@@ -7,6 +7,7 @@ import (
 
 	"github.com/stretchr/testify/require"
 
+	"github.com/xconnio/wampproto-cli"
 	"github.com/xconnio/wampproto-cli/cmd/wampproto"
 )
 
@@ -19,8 +20,7 @@ func TestRunGenerateChallenge(t *testing.T) {
 		require.NoError(t, err)
 
 		outputBytes, err := hex.DecodeString(output)
-		require.NoError(t, err)
-		require.Len(t, outputBytes, cryptoSignChallengeLen)
+		wampprotocli.NoErrorLen(t, err, outputBytes, cryptoSignChallengeLen)
 	})
 
 	t.Run("OutputBase64", func(t *testing.T) {
@@ -29,7 +29,6 @@ func TestRunGenerateChallenge(t *testing.T) {
 		require.NoError(t, err)
 
 		outputBytes, err := base64.StdEncoding.DecodeString(output)
-		require.NoError(t, err)
-		require.Len(t, outputBytes, cryptoSignChallengeLen)
+		wampprotocli.NoErrorLen(t, err, outputBytes, cryptoSignChallengeLen)
 	})
 }
