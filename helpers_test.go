@@ -30,3 +30,20 @@ func TestHexToBase64(t *testing.T) {
 		}
 	})
 }
+
+func TestDecodeHexOrBase64(t *testing.T) {
+	t.Run("ValidHexString", func(t *testing.T) {
+		_, err := wampprotocli.DecodeHexOrBase64("48656c6c6f20576f726c64")
+		require.NoError(t, err)
+	})
+
+	t.Run("ValidBase64String", func(t *testing.T) {
+		_, err := wampprotocli.DecodeHexOrBase64("SGVsbG8gV29ybGQ=")
+		require.NoError(t, err)
+	})
+
+	t.Run("InvalidString", func(t *testing.T) {
+		_, err := wampprotocli.DecodeHexOrBase64("invalidString")
+		require.EqualError(t, err, "must be in either hexadecimal or base64 format")
+	})
+}

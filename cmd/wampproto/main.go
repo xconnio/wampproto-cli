@@ -2,8 +2,6 @@ package main
 
 import (
 	"crypto/ed25519"
-	"encoding/base64"
-	"encoding/hex"
 	"fmt"
 	"log"
 	"os"
@@ -84,12 +82,9 @@ func Run(args []string) (string, error) {
 		return formatOutput(*c.output, challenge)
 
 	case c.signChallenge.FullCommand():
-		privateKeyBytes, err := hex.DecodeString(*c.privateKey)
+		privateKeyBytes, err := wampprotocli.DecodeHexOrBase64(*c.privateKey)
 		if err != nil {
-			privateKeyBytes, err = base64.StdEncoding.DecodeString(*c.privateKey)
-			if err != nil {
-				return "", fmt.Errorf("invalid private-key: must be in either hexadecimal or base64 format")
-			}
+			return "", fmt.Errorf("invalid private-key: %s", err.Error())
 		}
 
 		if len(privateKeyBytes) != 32 && len(privateKeyBytes) != 64 {
