@@ -121,3 +121,47 @@ func TestRunVerifyCryptoSignSignature(t *testing.T) {
 		wampprotocli.NoErrorEqual(t, err, "Signature verification failed", output)
 	})
 }
+
+func TestGenerateCryptoSignKeypair(t *testing.T) {
+	const publicPrivateKeyLen = 32
+
+	extractKeys := func(output string) (string, string) {
+		before, after, found := strings.Cut(output, "\n")
+		require.True(t, found)
+
+		publicKey, found := strings.CutPrefix(before, "Public Key: ")
+		require.True(t, found)
+		privateKey, found := strings.CutPrefix(after, "Private Key: ")
+		require.True(t, found)
+
+		return publicKey, privateKey
+	}
+
+	t.Run("OutputHex", func(t *testing.T) {
+		command := "cmd auth cryptosign keygen --output hex"
+		output, err := main.Run(strings.Split(command, " "))
+		require.NoError(t, err)
+
+		publicKey, privateKey := extractKeys(output)
+
+		publicKeyBytes, err := hex.DecodeString(publicKey)
+		wampprotocli.NoErrorLen(t, err, publicKeyBytes, publicPrivateKeyLen)
+
+		privateKeyBytes, err := hex.DecodeString(privateKey)
+		wampprotocli.NoErrorLen(t, err, privateKeyBytes, publicPrivateKeyLen)
+	})
+
+	t.Run("OutputBase64", func(t *testing.T) {
+		command := "cmd auth cryptosign keygen --output base64"
+		output, err := main.Run(strings.Split(command, " "))
+		require.NoError(t, err)
+
+		publicKey, privateKey := extractKeys(output)
+
+		publicKeyBytes, err := base64.StdEncoding.DecodeString(publicKey)
+		wampprotocli.NoErrorLen(t, err, publicKeyBytes, publicPrivateKeyLen)
+
+		privateKeyBytes, err := base64.StdEncoding.DecodeString(strings.TrimSpace(privateKey))
+		wampprotocli.NoErrorLen(t, err, privateKeyBytes, publicPrivateKeyLen)
+	})
+}

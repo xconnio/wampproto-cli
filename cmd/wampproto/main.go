@@ -37,6 +37,8 @@ type cmd struct {
 	verifySignature *kingpin.CmdClause
 	signature       *string
 	publicKey       *string
+
+	generateKeyPair *kingpin.CmdClause
 }
 
 func parseCmd(args []string) (*cmd, error) {
@@ -64,6 +66,8 @@ func parseCmd(args []string) (*cmd, error) {
 		verifySignature: verifySignatureCommand,
 		signature:       verifySignatureCommand.Flag("signature", "Signature to verify.").Required().String(),
 		publicKey:       verifySignatureCommand.Flag("public-key", "Public key to verify signature.").Required().String(),
+
+		generateKeyPair: cryptoSignCommand.Command("keygen", "Generate a WAMP cryptosign ed25519 keypair."),
 	}
 
 	parsedCommand, err := app.Parse(args[1:])
@@ -132,6 +136,23 @@ func Run(args []string) (string, error) {
 
 		return "Signature verification failed", nil
 
+	case c.generateKeyPair.FullCommand():
+		publicKey, privateKey, err := auth.GenerateCryptoSignKeyPair()
+		if err != nil {
+			return "", err
+		}
+
+		formatedPubKey, err := formatOutput(*c.output, publicKey)
+		if err != nil {
+			return "", err
+		}
+
+		formatedPriKey, err := formatOutput(*c.output, privateKey)
+		if err != nil {
+			return "", err
+		}
+
+		return fmt.Sprintf("Public Key: %s\nPrivate Key: %s", formatedPubKey, formatedPriKey), nil
 	}
 
 	return "", nil
