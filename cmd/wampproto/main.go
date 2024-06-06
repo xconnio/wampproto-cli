@@ -144,7 +144,7 @@ func Run(args []string) (string, error) {
 			return "Signature verified successfully", nil
 		}
 
-		return "Signature verification failed", nil
+		return "", fmt.Errorf("signature verification failed")
 
 	case c.generateKeyPair.FullCommand():
 		publicKey, privateKey, err := auth.GenerateCryptoSignKeyPair()

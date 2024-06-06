@@ -117,8 +117,8 @@ func TestRunVerifyCryptoSignSignature(t *testing.T) {
 			"34806bbdefe1d37c495d4f2c0d27d334155ab2cb244779ea2bddae92b4f3382036b9b519f3285e68a87f7468"+
 				"8cbf20ed72dbbaae2381e8a3cf023127bf24d1004bb64ae4ddf4e7d841f9194fd0771b81bbf9c90bac56b369dd5d73a311dba691",
 			testBase64PublicKey)
-		output, err := main.Run(strings.Split(command, " "))
-		wampprotocli.NoErrorEqual(t, err, "Signature verification failed", output)
+		_, err := main.Run(strings.Split(command, " "))
+		require.EqualError(t, err, "signature verification failed")
 	})
 }
 
