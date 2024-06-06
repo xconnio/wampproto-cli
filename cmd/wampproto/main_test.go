@@ -164,4 +164,52 @@ func TestGenerateCryptoSignKeypair(t *testing.T) {
 		privateKeyBytes, err := base64.StdEncoding.DecodeString(strings.TrimSpace(privateKey))
 		wampprotocli.NoErrorLen(t, err, privateKeyBytes, publicPrivateKeyLen)
 	})
+
+	t.Run("TestGetPublicKey", func(t *testing.T) {
+		const (
+			testPublicKey  = "58fda9f9f04539dde555a3e330f416c6e93506c2684d014a66f9d7175da72288"
+			testPrivateKey = "a67b4a69b248f9d140f8a882015d58bd8e184529c7dd4cfe3e8589aec38d94e3"
+
+			testPublicKeyBase64  = "WP2p+fBFOd3lVaPjMPQWxuk1BsJoTQFKZvnXF12nIog="
+			testPrivateKeyBase64 = "pntKabJI+dFA+KiCAV1YvY4YRSnH3Uz+PoWJrsONlOM="
+		)
+
+		t.Run("OutputHex", func(t *testing.T) {
+			command := fmt.Sprintf("wampproto auth cryptosign get-pubkey --private-key %s --output hex", testPrivateKey)
+			output, err := main.Run(strings.Split(command, " "))
+			require.NoError(t, err)
+
+			require.Equal(t, testPublicKey, output)
+		})
+
+		t.Run("OutputBase64", func(t *testing.T) {
+			command := fmt.Sprintf("wampproto auth cryptosign get-pubkey --private-key %s --output base64", testPrivateKey)
+			output, err := main.Run(strings.Split(command, " "))
+			require.NoError(t, err)
+
+			require.Equal(t, testPublicKeyBase64, output)
+		})
+
+		t.Run("Base64PrivateKey", func(t *testing.T) {
+			command := fmt.Sprintf("wampproto auth cryptosign get-pubkey --private-key %s --output hex", testPrivateKeyBase64)
+			output, err := main.Run(strings.Split(command, " "))
+			require.NoError(t, err)
+
+			require.Equal(t, testPublicKey, output)
+		})
+
+		t.Run("InvalidPrivateKeyFormat", func(t *testing.T) {
+			command := "wampproto auth cryptosign get-pubkey --private-key invalidString --output base64"
+			_, err := main.Run(strings.Split(command, " "))
+			require.EqualError(t, err, "invalid private-key: must be in either hexadecimal or base64 format")
+		})
+
+		t.Run("InvalidPrivateKey", func(t *testing.T) {
+			command := "wampproto auth cryptosign get-pubkey --private-key 48656c6c6f20576f726c64 --output base64"
+
+			require.Panics(t, func() {
+				_, _ = main.Run(strings.Split(command, " "))
+			})
+		})
+	})
 }
