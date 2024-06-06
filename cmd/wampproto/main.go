@@ -2,6 +2,7 @@ package main
 
 import (
 	"crypto/ed25519"
+	"encoding/hex"
 	"fmt"
 	"log"
 	"os"
@@ -39,6 +40,9 @@ type cmd struct {
 	publicKey       *string
 
 	generateKeyPair *kingpin.CmdClause
+
+	getPublicKey   *kingpin.CmdClause
+	privateKeyFlag *string
 }
 
 func parseCmd(args []string) (*cmd, error) {
@@ -50,6 +54,8 @@ func parseCmd(args []string) (*cmd, error) {
 	cryptoSignCommand := authCommand.Command("cryptosign", "Commands for cryptosign authentication.")
 	signChallengeCommand := cryptoSignCommand.Command("sign-challenge", "Sign a cryptosign challenge.")
 	verifySignatureCommand := cryptoSignCommand.Command("verify-signature", "Verify a cryptosign challenge.")
+	getPubKeyCommand := cryptoSignCommand.Command("get-pubkey",
+		"Retrieve the ed25519 public key associated with the provided private key.")
 	c := &cmd{
 		output: app.Flag("output", "Format of the output.").Default("hex").Enum(HexFormat, Base64Format),
 
@@ -68,6 +74,10 @@ func parseCmd(args []string) (*cmd, error) {
 		publicKey:       verifySignatureCommand.Flag("public-key", "Public key to verify signature.").Required().String(),
 
 		generateKeyPair: cryptoSignCommand.Command("keygen", "Generate a WAMP cryptosign ed25519 keypair."),
+
+		getPublicKey: getPubKeyCommand,
+		privateKeyFlag: getPubKeyCommand.Flag("private-key",
+			"The ed25519 private key to derive the corresponding public key.").Required().String(),
 	}
 
 	parsedCommand, err := app.Parse(args[1:])
@@ -153,6 +163,16 @@ func Run(args []string) (string, error) {
 		}
 
 		return fmt.Sprintf("Public Key: %s\nPrivate Key: %s", formatedPubKey, formatedPriKey), nil
+
+	case c.getPublicKey.FullCommand():
+		privateKeyBytes, err := wampprotocli.DecodeHexOrBase64(*c.privateKeyFlag)
+		if err != nil {
+			return "", fmt.Errorf("invalid private-key: %s", err.Error())
+		}
+
+		publicKeyBytes := ed25519.NewKeyFromSeed(privateKeyBytes).Public().(ed25519.PublicKey)
+
+		return formatOutput(*c.output, hex.EncodeToString(publicKeyBytes))
 	}
 
 	return "", nil
