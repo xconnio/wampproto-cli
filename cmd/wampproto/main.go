@@ -10,6 +10,7 @@ import (
 
 	"github.com/xconnio/wampproto-cli"
 	"github.com/xconnio/wampproto-go/auth"
+	"github.com/xconnio/wampproto-go/messages"
 )
 
 const (
@@ -23,6 +24,10 @@ type cmd struct {
 
 	auth *kingpin.CmdClause
 	*CryptoSign
+
+	message    *kingpin.CmdClause
+	serializer *string
+	*Call
 }
 
 func parseCmd(args []string) (*cmd, error) {
@@ -36,6 +41,9 @@ func parseCmd(args []string) (*cmd, error) {
 	verifySignatureCommand := cryptoSignCommand.Command("verify-signature", "Verify a cryptosign challenge.")
 	getPubKeyCommand := cryptoSignCommand.Command("get-pubkey",
 		"Retrieve the ed25519 public key associated with the provided private key.")
+
+	messageCommand := app.Command("message", "Wampproto messages.")
+	callCommand := messageCommand.Command("call", "Call message.")
 	c := &cmd{
 		output: app.Flag("output", "Format of the output.").Default("hex").
 			Enum(wampprotocli.HexFormat, wampprotocli.Base64Format),
@@ -59,6 +67,19 @@ func parseCmd(args []string) (*cmd, error) {
 			getPublicKey: getPubKeyCommand,
 			privateKeyFlag: getPubKeyCommand.Flag("private-key",
 				"The ed25519 private key to derive the corresponding public key.").Required().String(),
+		},
+
+		message: messageCommand,
+		serializer: messageCommand.Flag("serializer", "Serializer to use.").Default(wampprotocli.JsonSerializer).
+			Enum(wampprotocli.JsonSerializer, wampprotocli.CborSerializer, wampprotocli.MsgpackSerializer),
+
+		Call: &Call{
+			call:          callCommand,
+			callRequestID: callCommand.Arg("request-id", "Call request ID.").Required().Int64(),
+			callURI:       callCommand.Arg("procedure", "Procedure to call.").Required().String(),
+			callArgs:      callCommand.Arg("args", "Arguments for the call.").Strings(),
+			callKwargs:    callCommand.Flag("kwargs", "Keyword argument for the call.").Short('k').StringMap(),
+			callOption:    callCommand.Flag("option", "Call options.").Short('o').StringMap(),
 		},
 	}
 
@@ -155,6 +176,23 @@ func Run(args []string) (string, error) {
 		publicKeyBytes := ed25519.NewKeyFromSeed(privateKeyBytes).Public().(ed25519.PublicKey)
 
 		return wampprotocli.FormatOutputBytes(*c.output, publicKeyBytes)
+
+	case c.call.FullCommand():
+		var (
+			options   = wampprotocli.StringMapToTypedMap(*c.callOption)
+			arguments = wampprotocli.StringsToTypedList(*c.callArgs)
+			kwargs    = wampprotocli.StringMapToTypedMap(*c.callKwargs)
+
+			serializer = wampprotocli.SerializerByName(*c.serializer)
+		)
+		callMessage := messages.NewCall(*c.callRequestID, options, *c.callURI, arguments, kwargs)
+
+		serializedMessage, err := serializer.Serialize(callMessage)
+		if err != nil {
+			return "", err
+		}
+
+		return wampprotocli.FormatOutputBytes(*c.output, serializedMessage)
 	}
 
 	return "", nil

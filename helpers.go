@@ -6,6 +6,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"strconv"
+
+	"github.com/xconnio/wampproto-go/serializers"
 )
 
 func HexToBase64(hexStr string) (string, error) {
@@ -61,6 +63,18 @@ func FormatOutputBytes(outputFormat string, outputBytes []byte) (string, error) 
 	default:
 		return "", fmt.Errorf("invalid output format")
 	}
+}
+
+func SerializerByName(name string) serializers.Serializer {
+	switch name {
+	case JsonSerializer:
+		return &serializers.JSONSerializer{}
+	case CborSerializer:
+		return &serializers.CBORSerializer{}
+	case MsgpackSerializer:
+		return &serializers.MsgPackSerializer{}
+	}
+	return nil
 }
 
 func StringsToTypedList(strings []string) (typedList []any) {

@@ -213,3 +213,48 @@ func TestGenerateCryptoSignKeypair(t *testing.T) {
 		})
 	})
 }
+
+func TestCallMessage(t *testing.T) {
+	var command = "wampproto message call 1 io.xconn.test abc -k key:value abc=123"
+
+	t.Run("OutputHex", func(t *testing.T) {
+		output, err := main.Run(strings.Split(command, " "))
+		require.NoError(t, err)
+
+		_, err = hex.DecodeString(output)
+		require.NoError(t, err)
+	})
+
+	t.Run("OutputBase64", func(t *testing.T) {
+		output, err := main.Run(strings.Split(command+" --output base64", " "))
+		require.NoError(t, err)
+
+		_, err = base64.StdEncoding.DecodeString(output)
+		require.NoError(t, err)
+	})
+
+	t.Run("CBORSerializer", func(t *testing.T) {
+		output, err := main.Run(strings.Split(command+" --serializer cbor", " "))
+		require.NoError(t, err)
+
+		_, err = hex.DecodeString(output)
+		require.NoError(t, err)
+	})
+
+	t.Run("MsgPackSerializer", func(t *testing.T) {
+		output, err := main.Run(strings.Split(command+" --serializer msgpack", " "))
+		require.NoError(t, err)
+
+		_, err = hex.DecodeString(output)
+		require.NoError(t, err)
+	})
+
+	t.Run("NoArgsKwargs", func(t *testing.T) {
+		var cmd = "wampproto message call 1 io.xconn.test"
+		output, err := main.Run(strings.Split(cmd, " "))
+		require.NoError(t, err)
+
+		_, err = hex.DecodeString(output)
+		require.NoError(t, err)
+	})
+}
