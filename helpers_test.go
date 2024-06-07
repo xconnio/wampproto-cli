@@ -1,11 +1,14 @@
 package wampprotocli_test
 
 import (
+	"encoding/base64"
+	"encoding/hex"
 	"testing"
 
 	"github.com/stretchr/testify/require"
 
 	"github.com/xconnio/wampproto-cli"
+	"github.com/xconnio/wampproto-go/serializers"
 )
 
 func TestHexToBase64(t *testing.T) {
@@ -45,6 +48,69 @@ func TestDecodeHexOrBase64(t *testing.T) {
 	t.Run("InvalidString", func(t *testing.T) {
 		_, err := wampprotocli.DecodeHexOrBase64("invalidString")
 		require.EqualError(t, err, "must be in either hexadecimal or base64 format")
+	})
+}
+
+func TestFormatOutput(t *testing.T) {
+	var hexInput = "48656c6c6f" // "Hello" in hex
+
+	t.Run("HexFormat", func(t *testing.T) {
+		output, err := wampprotocli.FormatOutput(wampprotocli.HexFormat, hexInput)
+		wampprotocli.NoErrorEqual(t, err, hexInput, output)
+	})
+
+	t.Run("Base64Format", func(t *testing.T) {
+		expectedBase64 := base64.StdEncoding.EncodeToString([]byte("Hello"))
+		output, err := wampprotocli.FormatOutput(wampprotocli.Base64Format, hexInput)
+		wampprotocli.NoErrorEqual(t, err, expectedBase64, output)
+	})
+
+	t.Run("InvalidFormat", func(t *testing.T) {
+		_, err := wampprotocli.FormatOutput("invalid", "48656c6c6f")
+		require.Error(t, err)
+	})
+}
+
+func TestFormatOutputBytes(t *testing.T) {
+	var bytesInput = []byte("Hello")
+
+	t.Run("HexFormat", func(t *testing.T) {
+		expectedHex := hex.EncodeToString(bytesInput)
+		output, err := wampprotocli.FormatOutputBytes(wampprotocli.HexFormat, bytesInput)
+		wampprotocli.NoErrorEqual(t, err, expectedHex, output)
+	})
+
+	t.Run("Base64Format", func(t *testing.T) {
+		expectedBase64 := base64.StdEncoding.EncodeToString(bytesInput)
+		output, err := wampprotocli.FormatOutputBytes(wampprotocli.Base64Format, bytesInput)
+		wampprotocli.NoErrorEqual(t, err, expectedBase64, output)
+	})
+
+	t.Run("InvalidFormat", func(t *testing.T) {
+		_, err := wampprotocli.FormatOutputBytes("invalid", []byte("Hello"))
+		require.Error(t, err)
+	})
+}
+
+func TestSerializerByName(t *testing.T) {
+	t.Run("JSONSerializer", func(t *testing.T) {
+		serializer := wampprotocli.SerializerByName(wampprotocli.JsonSerializer)
+		require.IsType(t, &serializers.JSONSerializer{}, serializer)
+	})
+
+	t.Run("CBORSerializer", func(t *testing.T) {
+		serializer := wampprotocli.SerializerByName(wampprotocli.CborSerializer)
+		require.IsType(t, &serializers.CBORSerializer{}, serializer)
+	})
+
+	t.Run("MsgPackSerializer", func(t *testing.T) {
+		serializer := wampprotocli.SerializerByName(wampprotocli.MsgpackSerializer)
+		require.IsType(t, &serializers.MsgPackSerializer{}, serializer)
+	})
+
+	t.Run("InvalidSerializer", func(t *testing.T) {
+		serializer := wampprotocli.SerializerByName("invalid")
+		require.Nil(t, serializer)
 	})
 }
 
