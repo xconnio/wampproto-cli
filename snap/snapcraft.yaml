@@ -1,0 +1,21 @@
+name: wampproto
+base: core22
+version: '0.1.0'
+summary: wampproto interoperability tester
+description: |
+  wampproto interoperability tester
+
+grade: stable
+confinement: strict
+compression: lzo
+
+apps:
+  wampproto:
+    command: bin/wampproto
+
+parts:
+  wampproto:
+    plugin: go
+    source: .
+    build-snaps:
+      - go
