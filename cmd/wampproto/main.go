@@ -2,7 +2,6 @@ package main
 
 import (
 	"crypto/ed25519"
-	"encoding/hex"
 	"fmt"
 	"log"
 	"os"
@@ -15,9 +14,6 @@ import (
 
 const (
 	versionString = "0.1.0"
-
-	HexFormat    = "hex"
-	Base64Format = "base64"
 )
 
 type cmd struct {
@@ -26,23 +22,7 @@ type cmd struct {
 	output *string
 
 	auth *kingpin.CmdClause
-
-	cryptosign *kingpin.CmdClause
-
-	generateChallenge *kingpin.CmdClause
-
-	signChallenge *kingpin.CmdClause
-	challenge     *string
-	privateKey    *string
-
-	verifySignature *kingpin.CmdClause
-	signature       *string
-	publicKey       *string
-
-	generateKeyPair *kingpin.CmdClause
-
-	getPublicKey   *kingpin.CmdClause
-	privateKeyFlag *string
+	*CryptoSign
 }
 
 func parseCmd(args []string) (*cmd, error) {
@@ -57,27 +37,29 @@ func parseCmd(args []string) (*cmd, error) {
 	getPubKeyCommand := cryptoSignCommand.Command("get-pubkey",
 		"Retrieve the ed25519 public key associated with the provided private key.")
 	c := &cmd{
-		output: app.Flag("output", "Format of the output.").Default("hex").Enum(HexFormat, Base64Format),
+		output: app.Flag("output", "Format of the output.").Default("hex").
+			Enum(wampprotocli.HexFormat, wampprotocli.Base64Format),
 
 		auth: authCommand,
 
-		cryptosign: cryptoSignCommand,
+		CryptoSign: &CryptoSign{
+			cryptosign:        cryptoSignCommand,
+			generateChallenge: cryptoSignCommand.Command("generate-challenge", "Generate a cryptosign challenge."),
 
-		generateChallenge: cryptoSignCommand.Command("generate-challenge", "Generate a cryptosign challenge."),
+			signChallenge: signChallengeCommand,
+			challenge:     signChallengeCommand.Flag("challenge", "Challenge to sign.").Required().String(),
+			privateKey:    signChallengeCommand.Flag("private-key", "Private key to sign challenge.").Required().String(),
 
-		signChallenge: signChallengeCommand,
-		challenge:     signChallengeCommand.Flag("challenge", "Challenge to sign.").Required().String(),
-		privateKey:    signChallengeCommand.Flag("private-key", "Private key to sign challenge.").Required().String(),
+			verifySignature: verifySignatureCommand,
+			signature:       verifySignatureCommand.Flag("signature", "Signature to verify.").Required().String(),
+			publicKey:       verifySignatureCommand.Flag("public-key", "Public key to verify signature.").Required().String(),
 
-		verifySignature: verifySignatureCommand,
-		signature:       verifySignatureCommand.Flag("signature", "Signature to verify.").Required().String(),
-		publicKey:       verifySignatureCommand.Flag("public-key", "Public key to verify signature.").Required().String(),
+			generateKeyPair: cryptoSignCommand.Command("keygen", "Generate a WAMP cryptosign ed25519 keypair."),
 
-		generateKeyPair: cryptoSignCommand.Command("keygen", "Generate a WAMP cryptosign ed25519 keypair."),
-
-		getPublicKey: getPubKeyCommand,
-		privateKeyFlag: getPubKeyCommand.Flag("private-key",
-			"The ed25519 private key to derive the corresponding public key.").Required().String(),
+			getPublicKey: getPubKeyCommand,
+			privateKeyFlag: getPubKeyCommand.Flag("private-key",
+				"The ed25519 private key to derive the corresponding public key.").Required().String(),
+		},
 	}
 
 	parsedCommand, err := app.Parse(args[1:])
@@ -102,7 +84,7 @@ func Run(args []string) (string, error) {
 			return "", err
 		}
 
-		return formatOutput(*c.output, challenge)
+		return wampprotocli.FormatOutput(*c.output, challenge)
 
 	case c.signChallenge.FullCommand():
 		privateKeyBytes, err := wampprotocli.DecodeHexOrBase64(*c.privateKey)
@@ -123,7 +105,7 @@ func Run(args []string) (string, error) {
 			return "", err
 		}
 
-		return formatOutput(*c.output, signedChallenge)
+		return wampprotocli.FormatOutput(*c.output, signedChallenge)
 
 	case c.verifySignature.FullCommand():
 		publicKeyBytes, err := wampprotocli.DecodeHexOrBase64(*c.publicKey)
@@ -152,12 +134,12 @@ func Run(args []string) (string, error) {
 			return "", err
 		}
 
-		formatedPubKey, err := formatOutput(*c.output, publicKey)
+		formatedPubKey, err := wampprotocli.FormatOutput(*c.output, publicKey)
 		if err != nil {
 			return "", err
 		}
 
-		formatedPriKey, err := formatOutput(*c.output, privateKey)
+		formatedPriKey, err := wampprotocli.FormatOutput(*c.output, privateKey)
 		if err != nil {
 			return "", err
 		}
@@ -172,28 +154,10 @@ func Run(args []string) (string, error) {
 
 		publicKeyBytes := ed25519.NewKeyFromSeed(privateKeyBytes).Public().(ed25519.PublicKey)
 
-		return formatOutput(*c.output, hex.EncodeToString(publicKeyBytes))
+		return wampprotocli.FormatOutputBytes(*c.output, publicKeyBytes)
 	}
 
 	return "", nil
-}
-
-func formatOutput(outputFormat, outputString string) (string, error) {
-	switch outputFormat {
-	case HexFormat:
-		return outputString, nil
-
-	case Base64Format:
-		base64Str, err := wampprotocli.HexToBase64(outputString)
-		if err != nil {
-			return "", err
-		}
-
-		return base64Str, err
-
-	default:
-		return "", fmt.Errorf("invalid output format")
-	}
 }
 
 func main() {

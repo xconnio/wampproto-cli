@@ -32,6 +32,37 @@ func DecodeHexOrBase64(str string) ([]byte, error) {
 	return nil, fmt.Errorf("must be in either hexadecimal or base64 format")
 }
 
+func FormatOutput(outputFormat, outputString string) (string, error) {
+	switch outputFormat {
+	case HexFormat:
+		return outputString, nil
+
+	case Base64Format:
+		base64Str, err := HexToBase64(outputString)
+		if err != nil {
+			return "", err
+		}
+
+		return base64Str, err
+
+	default:
+		return "", fmt.Errorf("invalid output format")
+	}
+}
+
+func FormatOutputBytes(outputFormat string, outputBytes []byte) (string, error) {
+	switch outputFormat {
+	case HexFormat:
+		return hex.EncodeToString(outputBytes), nil
+
+	case Base64Format:
+		return base64.StdEncoding.EncodeToString(outputBytes), nil
+
+	default:
+		return "", fmt.Errorf("invalid output format")
+	}
+}
+
 func StringsToTypedList(strings []string) (typedList []any) {
 	for _, value := range strings {
 		if number, errNumber := strconv.Atoi(value); errNumber == nil {
