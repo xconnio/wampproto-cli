@@ -31,6 +31,7 @@ type cmd struct {
 	*Call
 	*Register
 	*Registered
+	*Invocation
 }
 
 func parseCmd(args []string) (*cmd, error) {
@@ -49,6 +50,7 @@ func parseCmd(args []string) (*cmd, error) {
 	callCommand := messageCommand.Command("call", "Call message.")
 	registerCommand := messageCommand.Command("register", "Register message.")
 	registeredCommand := messageCommand.Command("registered", "Registered message.")
+	invocationCommand := messageCommand.Command("invocation", "Invocation message.")
 	c := &cmd{
 		output: app.Flag("output", "Format of the output.").Default("hex").
 			Enum(wampprotocli.HexFormat, wampprotocli.Base64Format),
@@ -99,6 +101,15 @@ func parseCmd(args []string) (*cmd, error) {
 			registered:          registeredCommand,
 			registeredRequestID: registeredCommand.Arg("request-id", "Registered request ID.").Required().Int64(),
 			registrationID:      registeredCommand.Arg("registration-id", "Registration ID.").Required().Int64(),
+		},
+
+		Invocation: &Invocation{
+			invocation:        invocationCommand,
+			invRequestID:      invocationCommand.Arg("request-id", "Invocation request ID.").Required().Int64(),
+			invRegistrationID: invocationCommand.Arg("registration-id", "Invocation registration ID.").Required().Int64(),
+			invDetails:        invocationCommand.Flag("details", "Invocation details.").Short('d').StringMap(),
+			invArgs:           invocationCommand.Arg("args", "Invocation arguments.").Strings(),
+			invKwArgs:         invocationCommand.Flag("kwargs", "Invocation KW arguments.").Short('k').StringMap(),
 		},
 	}
 
@@ -227,6 +238,19 @@ func Run(args []string) (string, error) {
 		registeredCmd := messages.NewRegistered(*c.registeredRequestID, *c.registrationID)
 
 		return serializeMessageAndOutput(serializer, registeredCmd, *c.output)
+
+	case c.invocation.FullCommand():
+		var (
+			details   = wampprotocli.StringMapToTypedMap(*c.invDetails)
+			arguments = wampprotocli.StringsToTypedList(*c.invArgs)
+			kwargs    = wampprotocli.StringMapToTypedMap(*c.invKwArgs)
+
+			serializer = wampprotocli.SerializerByName(*c.serializer)
+		)
+
+		invocationCommand := messages.NewInvocation(*c.invRequestID, *c.invRegistrationID, details, arguments, kwargs)
+
+		return serializeMessageAndOutput(serializer, invocationCommand, *c.output)
 	}
 
 	return "", nil

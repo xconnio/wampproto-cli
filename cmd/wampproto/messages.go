@@ -25,3 +25,12 @@ type Registered struct {
 	registeredRequestID *int64
 	registrationID      *int64
 }
+
+type Invocation struct {
+	invocation        *kingpin.CmdClause
+	invRequestID      *int64
+	invRegistrationID *int64
+	invDetails        *map[string]string
+	invArgs           *[]string
+	invKwArgs         *map[string]string
+}
