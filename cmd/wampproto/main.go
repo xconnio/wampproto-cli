@@ -11,6 +11,7 @@ import (
 	"github.com/xconnio/wampproto-cli"
 	"github.com/xconnio/wampproto-go/auth"
 	"github.com/xconnio/wampproto-go/messages"
+	"github.com/xconnio/wampproto-go/serializers"
 )
 
 const (
@@ -28,6 +29,7 @@ type cmd struct {
 	message    *kingpin.CmdClause
 	serializer *string
 	*Call
+	*Register
 }
 
 func parseCmd(args []string) (*cmd, error) {
@@ -44,6 +46,7 @@ func parseCmd(args []string) (*cmd, error) {
 
 	messageCommand := app.Command("message", "Wampproto messages.")
 	callCommand := messageCommand.Command("call", "Call message.")
+	registerCommand := messageCommand.Command("register", "Register message.")
 	c := &cmd{
 		output: app.Flag("output", "Format of the output.").Default("hex").
 			Enum(wampprotocli.HexFormat, wampprotocli.Base64Format),
@@ -81,6 +84,13 @@ func parseCmd(args []string) (*cmd, error) {
 			callArgs:      callCommand.Arg("args", "Arguments for the call.").Strings(),
 			callKwargs:    callCommand.Flag("kwargs", "Keyword argument for the call.").Short('k').StringMap(),
 			callOption:    callCommand.Flag("option", "Call options.").Short('o').StringMap(),
+		},
+
+		Register: &Register{
+			register:     registerCommand,
+			regRequestID: registerCommand.Arg("request-id", "Request request ID.").Required().Int64(),
+			regProcedure: registerCommand.Arg("procedure", "Procedure to register.").Required().String(),
+			regOptions:   registerCommand.Flag("option", "Register options.").Short('o').StringMap(),
 		},
 	}
 
@@ -191,15 +201,30 @@ func Run(args []string) (string, error) {
 
 		callMessage := messages.NewCall(*c.callRequestID, options, *c.callURI, arguments, kwargs)
 
-		serializedMessage, err := serializer.Serialize(callMessage)
-		if err != nil {
-			return "", err
-		}
+		return serializeMessageAndOutput(serializer, callMessage, *c.output)
 
-		return wampprotocli.FormatOutputBytes(*c.output, serializedMessage)
+	case c.register.FullCommand():
+		var (
+			options    = wampprotocli.StringMapToTypedMap(*c.regOptions)
+			serializer = wampprotocli.SerializerByName(*c.serializer)
+		)
+
+		regMessage := messages.NewRegister(*c.regRequestID, options, *c.regProcedure)
+
+		return serializeMessageAndOutput(serializer, regMessage, *c.output)
 	}
 
 	return "", nil
+}
+
+func serializeMessageAndOutput(serializer serializers.Serializer, message messages.Message,
+	outputFormat string) (string, error) {
+	serializedMessage, err := serializer.Serialize(message)
+	if err != nil {
+		return "", err
+	}
+
+	return wampprotocli.FormatOutputBytes(outputFormat, serializedMessage)
 }
 
 func main() {

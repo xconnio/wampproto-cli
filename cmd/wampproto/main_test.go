@@ -266,3 +266,56 @@ func TestCallMessage(t *testing.T) {
 		require.NoError(t, err)
 	})
 }
+
+func TestRegisterMessage(t *testing.T) {
+	var command = "wampproto message register 1 io.xconn.test"
+
+	t.Run("OutputHex", func(t *testing.T) {
+		output, err := main.Run(strings.Split(command, " "))
+		require.NoError(t, err)
+
+		_, err = hex.DecodeString(output)
+		require.NoError(t, err)
+	})
+
+	t.Run("OutputBase64", func(t *testing.T) {
+		output, err := main.Run(strings.Split(command+" --output base64", " "))
+		require.NoError(t, err)
+
+		_, err = base64.StdEncoding.DecodeString(output)
+		require.NoError(t, err)
+	})
+
+	t.Run("CBORSerializer", func(t *testing.T) {
+		output, err := main.Run(strings.Split(command+" --serializer cbor", " "))
+		require.NoError(t, err)
+
+		_, err = hex.DecodeString(output)
+		require.NoError(t, err)
+	})
+
+	t.Run("MsgPackSerializer", func(t *testing.T) {
+		output, err := main.Run(strings.Split(command+" --serializer msgpack", " "))
+		require.NoError(t, err)
+
+		_, err = hex.DecodeString(output)
+		require.NoError(t, err)
+	})
+
+	t.Run("ProtobufSerailizer", func(t *testing.T) {
+		output, err := main.Run(strings.Split(command+" --serializer protobuf", " "))
+		require.NoError(t, err)
+
+		_, err = hex.DecodeString(output)
+		require.NoError(t, err)
+	})
+
+	t.Run("WithOptions", func(t *testing.T) {
+		var cmd = command + " -o invoke=roundrobin"
+		output, err := main.Run(strings.Split(cmd, " "))
+		require.NoError(t, err)
+
+		_, err = hex.DecodeString(output)
+		require.NoError(t, err)
+	})
+}

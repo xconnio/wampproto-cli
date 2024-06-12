@@ -12,3 +12,10 @@ type Call struct {
 	callKwargs    *map[string]string
 	callOption    *map[string]string
 }
+
+type Register struct {
+	register     *kingpin.CmdClause
+	regRequestID *int64
+	regProcedure *string
+	regOptions   *map[string]string
+}
