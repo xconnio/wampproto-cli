@@ -42,3 +42,9 @@ type Yield struct {
 	yieldArgs      *[]string
 	yieldKwArgs    *map[string]string
 }
+
+type UnRegister struct {
+	unRegister          *kingpin.CmdClause
+	unRegRequestID      *int64
+	unRegRegistrationID *int64
+}

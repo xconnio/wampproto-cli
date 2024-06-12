@@ -321,3 +321,9 @@ func TestYieldMessage(t *testing.T) {
 		require.NoError(t, err)
 	})
 }
+
+func TestUnRegisterMessage(t *testing.T) {
+	var command = "wampproto message unregister 1 1"
+
+	testMessageCommand(t, command)
+}
