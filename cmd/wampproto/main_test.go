@@ -285,3 +285,9 @@ func TestRegisterMessage(t *testing.T) {
 		require.NoError(t, err)
 	})
 }
+
+func TestRegisteredMessage(t *testing.T) {
+	var command = "wampproto message registered 1 1"
+
+	testMessageCommand(t, command)
+}

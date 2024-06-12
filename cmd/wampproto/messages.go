@@ -19,3 +19,9 @@ type Register struct {
 	regProcedure *string
 	regOptions   *map[string]string
 }
+
+type Registered struct {
+	registered          *kingpin.CmdClause
+	registeredRequestID *int64
+	registrationID      *int64
+}
