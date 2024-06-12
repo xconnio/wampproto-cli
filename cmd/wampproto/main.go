@@ -29,6 +29,7 @@ type cmd struct {
 	message    *kingpin.CmdClause
 	serializer *string
 	*Call
+	*Result
 	*Register
 	*Registered
 	*Invocation
@@ -51,6 +52,7 @@ func parseCmd(args []string) (*cmd, error) {
 
 	messageCommand := app.Command("message", "Wampproto messages.")
 	callCommand := messageCommand.Command("call", "Call message.")
+	resultCommand := messageCommand.Command("result", "Result messages.")
 	registerCommand := messageCommand.Command("register", "Register message.")
 	registeredCommand := messageCommand.Command("registered", "Registered message.")
 	invocationCommand := messageCommand.Command("invocation", "Invocation message.")
@@ -94,6 +96,14 @@ func parseCmd(args []string) (*cmd, error) {
 			callArgs:      callCommand.Arg("args", "Arguments for the call.").Strings(),
 			callKwargs:    callCommand.Flag("kwargs", "Keyword argument for the call.").Short('k').StringMap(),
 			callOption:    callCommand.Flag("option", "Call options.").Short('o').StringMap(),
+		},
+
+		Result: &Result{
+			result:          resultCommand,
+			resultRequestID: resultCommand.Arg("request-id", "Result request ID.").Required().Int64(),
+			resultDetails:   resultCommand.Flag("details", "Result details.").Short('d').StringMap(),
+			resultArgs:      resultCommand.Arg("args", "Result Arguments").Strings(),
+			resultKwargs:    resultCommand.Flag("kwargs", "Result KW Arguments.").Short('k').StringMap(),
 		},
 
 		Register: &Register{
@@ -246,6 +256,19 @@ func Run(args []string) (string, error) {
 		callMessage := messages.NewCall(*c.callRequestID, options, *c.callURI, arguments, kwargs)
 
 		return serializeMessageAndOutput(serializer, callMessage, *c.output)
+
+	case c.result.FullCommand():
+		var (
+			details   = wampprotocli.StringMapToTypedMap(*c.resultDetails)
+			arguments = wampprotocli.StringsToTypedList(*c.resultArgs)
+			kwargs    = wampprotocli.StringMapToTypedMap(*c.resultKwargs)
+
+			serializer = wampprotocli.SerializerByName(*c.serializer)
+		)
+
+		resultMessage := messages.NewResult(*c.resultRequestID, details, arguments, kwargs)
+
+		return serializeMessageAndOutput(serializer, resultMessage, *c.output)
 
 	case c.register.FullCommand():
 		var (

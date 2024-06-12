@@ -271,6 +271,21 @@ func TestCallMessage(t *testing.T) {
 	})
 }
 
+func TestResultMessage(t *testing.T) {
+	var command = "wampproto message result 1"
+
+	testMessageCommand(t, command)
+
+	t.Run("WithArgsKwargsDetails", func(t *testing.T) {
+		var cmd = command + " abc def --details abc=def -k key:value abc=123"
+		output, err := main.Run(strings.Split(cmd, " "))
+		require.NoError(t, err)
+
+		_, err = hex.DecodeString(output)
+		require.NoError(t, err)
+	})
+}
+
 func TestRegisterMessage(t *testing.T) {
 	var command = "wampproto message register 1 io.xconn.test"
 
@@ -297,7 +312,7 @@ func TestInvocationMessage(t *testing.T) {
 
 	testMessageCommand(t, command)
 
-	t.Run("WithArgsKwargsOptions", func(t *testing.T) {
+	t.Run("WithArgsKwargsDetails", func(t *testing.T) {
 		var cmd = command + " abc def --details abc=def -k key:value abc=123"
 		output, err := main.Run(strings.Split(cmd, " "))
 		require.NoError(t, err)

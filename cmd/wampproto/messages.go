@@ -13,6 +13,14 @@ type Call struct {
 	callOption    *map[string]string
 }
 
+type Result struct {
+	result          *kingpin.CmdClause
+	resultRequestID *int64
+	resultDetails   *map[string]string
+	resultArgs      *[]string
+	resultKwargs    *map[string]string
+}
+
 type Register struct {
 	register     *kingpin.CmdClause
 	regRequestID *int64
