@@ -34,3 +34,11 @@ type Invocation struct {
 	invArgs           *[]string
 	invKwArgs         *map[string]string
 }
+
+type Yield struct {
+	yield          *kingpin.CmdClause
+	yieldRequestID *int64
+	yieldOptions   *map[string]string
+	yieldArgs      *[]string
+	yieldKwArgs    *map[string]string
+}

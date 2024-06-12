@@ -32,6 +32,7 @@ type cmd struct {
 	*Register
 	*Registered
 	*Invocation
+	*Yield
 }
 
 func parseCmd(args []string) (*cmd, error) {
@@ -51,6 +52,7 @@ func parseCmd(args []string) (*cmd, error) {
 	registerCommand := messageCommand.Command("register", "Register message.")
 	registeredCommand := messageCommand.Command("registered", "Registered message.")
 	invocationCommand := messageCommand.Command("invocation", "Invocation message.")
+	yieldCommand := messageCommand.Command("yield", "Yield message.")
 	c := &cmd{
 		output: app.Flag("output", "Format of the output.").Default("hex").
 			Enum(wampprotocli.HexFormat, wampprotocli.Base64Format),
@@ -110,6 +112,14 @@ func parseCmd(args []string) (*cmd, error) {
 			invDetails:        invocationCommand.Flag("details", "Invocation details.").Short('d').StringMap(),
 			invArgs:           invocationCommand.Arg("args", "Invocation arguments.").Strings(),
 			invKwArgs:         invocationCommand.Flag("kwargs", "Invocation KW arguments.").Short('k').StringMap(),
+		},
+
+		Yield: &Yield{
+			yield:          yieldCommand,
+			yieldRequestID: yieldCommand.Arg("request-id", "Yield request ID.").Required().Int64(),
+			yieldOptions:   yieldCommand.Flag("option", "Yield options.").Short('o').StringMap(),
+			yieldArgs:      yieldCommand.Arg("args", "Yield arguments.").Strings(),
+			yieldKwArgs:    yieldCommand.Flag("kwargs", "Yield KW arguments.").Short('k').StringMap(),
 		},
 	}
 
@@ -248,9 +258,22 @@ func Run(args []string) (string, error) {
 			serializer = wampprotocli.SerializerByName(*c.serializer)
 		)
 
-		invocationCommand := messages.NewInvocation(*c.invRequestID, *c.invRegistrationID, details, arguments, kwargs)
+		invocationMessage := messages.NewInvocation(*c.invRequestID, *c.invRegistrationID, details, arguments, kwargs)
 
-		return serializeMessageAndOutput(serializer, invocationCommand, *c.output)
+		return serializeMessageAndOutput(serializer, invocationMessage, *c.output)
+
+	case c.yield.FullCommand():
+		var (
+			options   = wampprotocli.StringMapToTypedMap(*c.yieldOptions)
+			arguments = wampprotocli.StringsToTypedList(*c.yieldArgs)
+			kwargs    = wampprotocli.StringMapToTypedMap(*c.yieldKwArgs)
+
+			serializer = wampprotocli.SerializerByName(*c.serializer)
+		)
+
+		yieldMessage := messages.NewYield(*c.yieldRequestID, options, arguments, kwargs)
+
+		return serializeMessageAndOutput(serializer, yieldMessage, *c.output)
 	}
 
 	return "", nil

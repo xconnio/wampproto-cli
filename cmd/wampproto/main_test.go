@@ -306,3 +306,18 @@ func TestInvocationMessage(t *testing.T) {
 		require.NoError(t, err)
 	})
 }
+
+func TestYieldMessage(t *testing.T) {
+	var command = "wampproto message yield 1"
+
+	testMessageCommand(t, command)
+
+	t.Run("WithArgsKwargsOptions", func(t *testing.T) {
+		var cmd = command + " abc def -o abc=def -k key:value abc=123"
+		output, err := main.Run(strings.Split(cmd, " "))
+		require.NoError(t, err)
+
+		_, err = hex.DecodeString(output)
+		require.NoError(t, err)
+	})
+}
