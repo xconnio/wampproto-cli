@@ -8,6 +8,7 @@ import (
 	"strconv"
 
 	"github.com/xconnio/wampproto-go/serializers"
+	"github.com/xconnio/wampproto-protobuf/go"
 )
 
 func HexToBase64(hexStr string) (string, error) {
@@ -73,6 +74,8 @@ func SerializerByName(name string) serializers.Serializer {
 		return &serializers.CBORSerializer{}
 	case MsgpackSerializer:
 		return &serializers.MsgPackSerializer{}
+	case ProtobufSerializer:
+		return &wampprotobuf.ProtobufSerializer{}
 	}
 	return nil
 }

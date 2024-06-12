@@ -71,7 +71,8 @@ func parseCmd(args []string) (*cmd, error) {
 
 		message: messageCommand,
 		serializer: messageCommand.Flag("serializer", "Serializer to use.").Default(wampprotocli.JsonSerializer).
-			Enum(wampprotocli.JsonSerializer, wampprotocli.CborSerializer, wampprotocli.MsgpackSerializer),
+			Enum(wampprotocli.JsonSerializer, wampprotocli.CborSerializer, wampprotocli.MsgpackSerializer,
+				wampprotocli.ProtobufSerializer),
 
 		Call: &Call{
 			call:          callCommand,

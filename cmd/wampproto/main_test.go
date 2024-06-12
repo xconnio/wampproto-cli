@@ -249,6 +249,14 @@ func TestCallMessage(t *testing.T) {
 		require.NoError(t, err)
 	})
 
+	t.Run("ProtobufSerailizer", func(t *testing.T) {
+		output, err := main.Run(strings.Split(command+" --serializer protobuf", " "))
+		require.NoError(t, err)
+
+		_, err = hex.DecodeString(output)
+		require.NoError(t, err)
+	})
+
 	t.Run("NoArgsKwargs", func(t *testing.T) {
 		var cmd = "wampproto message call 1 io.xconn.test"
 		output, err := main.Run(strings.Split(cmd, " "))
