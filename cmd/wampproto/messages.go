@@ -48,3 +48,8 @@ type UnRegister struct {
 	unRegRequestID      *int64
 	unRegRegistrationID *int64
 }
+
+type UnRegistered struct {
+	unRegistered          *kingpin.CmdClause
+	UnRegisteredRequestID *int64
+}

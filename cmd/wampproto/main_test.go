@@ -327,3 +327,9 @@ func TestUnRegisterMessage(t *testing.T) {
 
 	testMessageCommand(t, command)
 }
+
+func TestUnRegisteredMessage(t *testing.T) {
+	var command = "wampproto message unregistered 1"
+
+	testMessageCommand(t, command)
+}
