@@ -135,3 +135,15 @@ func StringMapToTypedMap(stringMap map[string]string) (typesMap map[string]any) 
 
 	return typesMap
 }
+
+func UpdateArgsKwArgsIfEmpty(arguments []any, kwargs map[string]any) ([]any, map[string]any) {
+	if len(kwargs) == 0 {
+		kwargs = nil
+		// should only be set to nil only if kwargs are also nil
+		if len(arguments) == 0 {
+			arguments = nil
+		}
+	}
+
+	return arguments, kwargs
+}
