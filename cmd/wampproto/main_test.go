@@ -45,7 +45,7 @@ func TestRunSignCryptoSignChallenge(t *testing.T) {
 	)
 
 	t.Run("OutputHex", func(t *testing.T) {
-		command := fmt.Sprintf("cmd auth cryptosign sign-challenge --challenge %s --private-key %s --output hex",
+		command := fmt.Sprintf("cmd auth cryptosign sign-challenge %s %s --output hex",
 			testChallenge, testHexPrivateKey)
 		output, err := main.Run(strings.Split(command, " "))
 		require.NoError(t, err)
@@ -55,7 +55,7 @@ func TestRunSignCryptoSignChallenge(t *testing.T) {
 	})
 
 	t.Run("OutputBase64", func(t *testing.T) {
-		command := fmt.Sprintf("cmd auth cryptosign sign-challenge --challenge %s --private-key %s --output base64",
+		command := fmt.Sprintf("cmd auth cryptosign sign-challenge %s %s --output base64",
 			testChallenge, testHexPrivateKey)
 		output, err := main.Run(strings.Split(command, " "))
 		require.NoError(t, err)
@@ -65,7 +65,7 @@ func TestRunSignCryptoSignChallenge(t *testing.T) {
 	})
 
 	t.Run("Base64PrivateKey", func(t *testing.T) {
-		command := fmt.Sprintf("cmd auth cryptosign sign-challenge --challenge %s --private-key %s --output hex",
+		command := fmt.Sprintf("cmd auth cryptosign sign-challenge %s %s --output hex",
 			testChallenge, testBase64PrivateKey)
 		output, err := main.Run(strings.Split(command, " "))
 		require.NoError(t, err)
@@ -75,7 +75,7 @@ func TestRunSignCryptoSignChallenge(t *testing.T) {
 	})
 
 	t.Run("InvalidPrivateKey", func(t *testing.T) {
-		command := fmt.Sprintf("cmd auth cryptosign sign-challenge --challenge %s --private-key %s --output hex",
+		command := fmt.Sprintf("cmd auth cryptosign sign-challenge %s %s --output hex",
 			testChallenge, "mcbhagcakjhfcvsjvcjhvcjhv")
 		_, err := main.Run(strings.Split(command, " "))
 		require.Error(t, err)
@@ -91,29 +91,25 @@ func TestRunVerifyCryptoSignSignature(t *testing.T) {
 	)
 
 	t.Run("HexPublicKey", func(t *testing.T) {
-		command := fmt.Sprintf("cmd auth cryptosign verify-signature --signature %s --public-key %s",
-			testSignature, testHexPublicKey)
+		command := fmt.Sprintf("cmd auth cryptosign verify-signature %s %s", testSignature, testHexPublicKey)
 		output, err := main.Run(strings.Split(command, " "))
 		wampprotocli.NoErrorEqual(t, err, "Signature verified successfully", output)
-
 	})
 
 	t.Run("Base64PublicKey", func(t *testing.T) {
-		command := fmt.Sprintf("cmd auth cryptosign verify-signature --signature %s --public-key %s",
-			testSignature, testBase64PublicKey)
+		command := fmt.Sprintf("cmd auth cryptosign verify-signature %s %s", testSignature, testBase64PublicKey)
 		output, err := main.Run(strings.Split(command, " "))
 		wampprotocli.NoErrorEqual(t, err, "Signature verified successfully", output)
 	})
 
 	t.Run("InvalidPublicKey", func(t *testing.T) {
-		command := fmt.Sprintf("cmd auth cryptosign verify-signature --signature %s --public-key %s",
-			testSignature, "ivalidPubKey")
+		command := fmt.Sprintf("cmd auth cryptosign verify-signature %s %s", testSignature, "ivalidPubKey")
 		_, err := main.Run(strings.Split(command, " "))
 		require.EqualError(t, err, "invalid public-key: must be of length 32")
 	})
 
 	t.Run("BadSignature", func(t *testing.T) {
-		command := fmt.Sprintf("cmd auth cryptosign verify-signature --signature %s --public-key %s",
+		command := fmt.Sprintf("cmd auth cryptosign verify-signature %s %s",
 			"34806bbdefe1d37c495d4f2c0d27d334155ab2cb244779ea2bddae92b4f3382036b9b519f3285e68a87f7468"+
 				"8cbf20ed72dbbaae2381e8a3cf023127bf24d1004bb64ae4ddf4e7d841f9194fd0771b81bbf9c90bac56b369dd5d73a311dba691",
 			testBase64PublicKey)
@@ -175,7 +171,7 @@ func TestGenerateCryptoSignKeypair(t *testing.T) {
 		)
 
 		t.Run("OutputHex", func(t *testing.T) {
-			command := fmt.Sprintf("wampproto auth cryptosign get-pubkey --private-key %s --output hex", testPrivateKey)
+			command := fmt.Sprintf("wampproto auth cryptosign get-pubkey %s --output hex", testPrivateKey)
 			output, err := main.Run(strings.Split(command, " "))
 			require.NoError(t, err)
 
@@ -183,7 +179,7 @@ func TestGenerateCryptoSignKeypair(t *testing.T) {
 		})
 
 		t.Run("OutputBase64", func(t *testing.T) {
-			command := fmt.Sprintf("wampproto auth cryptosign get-pubkey --private-key %s --output base64", testPrivateKey)
+			command := fmt.Sprintf("wampproto auth cryptosign get-pubkey %s --output base64", testPrivateKey)
 			output, err := main.Run(strings.Split(command, " "))
 			require.NoError(t, err)
 
@@ -191,7 +187,7 @@ func TestGenerateCryptoSignKeypair(t *testing.T) {
 		})
 
 		t.Run("Base64PrivateKey", func(t *testing.T) {
-			command := fmt.Sprintf("wampproto auth cryptosign get-pubkey --private-key %s --output hex", testPrivateKeyBase64)
+			command := fmt.Sprintf("wampproto auth cryptosign get-pubkey %s --output hex", testPrivateKeyBase64)
 			output, err := main.Run(strings.Split(command, " "))
 			require.NoError(t, err)
 
@@ -199,13 +195,13 @@ func TestGenerateCryptoSignKeypair(t *testing.T) {
 		})
 
 		t.Run("InvalidPrivateKeyFormat", func(t *testing.T) {
-			command := "wampproto auth cryptosign get-pubkey --private-key invalidString --output base64"
+			command := "wampproto auth cryptosign get-pubkey invalidString --output base64"
 			_, err := main.Run(strings.Split(command, " "))
 			require.EqualError(t, err, "invalid private-key: must be in either hexadecimal or base64 format")
 		})
 
 		t.Run("InvalidPrivateKey", func(t *testing.T) {
-			command := "wampproto auth cryptosign get-pubkey --private-key 48656c6c6f20576f726c64 --output base64"
+			command := "wampproto auth cryptosign get-pubkey 48656c6c6f20576f726c64 --output base64"
 
 			require.Panics(t, func() {
 				_, _ = main.Run(strings.Split(command, " "))

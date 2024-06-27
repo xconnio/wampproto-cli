@@ -55,17 +55,17 @@ func parseCmd(args []string) (*cmd, error) {
 			generateChallenge: cryptoSignCommand.Command("generate-challenge", "Generate a cryptosign challenge."),
 
 			signChallenge: signChallengeCommand,
-			challenge:     signChallengeCommand.Flag("challenge", "Challenge to sign.").Required().String(),
-			privateKey:    signChallengeCommand.Flag("private-key", "Private key to sign challenge.").Required().String(),
+			challenge:     signChallengeCommand.Arg("challenge", "Challenge to sign.").Required().String(),
+			privateKey:    signChallengeCommand.Arg("private-key", "Private key to sign challenge.").Required().String(),
 
 			verifySignature: verifySignatureCommand,
-			signature:       verifySignatureCommand.Flag("signature", "Signature to verify.").Required().String(),
-			publicKey:       verifySignatureCommand.Flag("public-key", "Public key to verify signature.").Required().String(),
+			signature:       verifySignatureCommand.Arg("signature", "Signature to verify.").Required().String(),
+			publicKey:       verifySignatureCommand.Arg("public-key", "Public key to verify signature.").Required().String(),
 
 			generateKeyPair: cryptoSignCommand.Command("keygen", "Generate a WAMP cryptosign ed25519 keypair."),
 
 			getPublicKey: getPubKeyCommand,
-			privateKeyFlag: getPubKeyCommand.Flag("private-key",
+			privateKeyFlag: getPubKeyCommand.Arg("private-key",
 				"The ed25519 private key to derive the corresponding public key.").Required().String(),
 		},
 
