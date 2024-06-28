@@ -11,6 +11,7 @@ import (
 	"github.com/xconnio/wampproto-cli"
 	"github.com/xconnio/wampproto-go/auth"
 	"github.com/xconnio/wampproto-go/messages"
+	"github.com/xconnio/wampproto-go/serializers"
 )
 
 const (
@@ -28,6 +29,13 @@ type cmd struct {
 	message    *kingpin.CmdClause
 	serializer *string
 	*Call
+	*Result
+	*Register
+	*Registered
+	*Invocation
+	*Yield
+	*UnRegister
+	*UnRegistered
 }
 
 func parseCmd(args []string) (*cmd, error) {
@@ -44,6 +52,13 @@ func parseCmd(args []string) (*cmd, error) {
 
 	messageCommand := app.Command("message", "Wampproto messages.")
 	callCommand := messageCommand.Command("call", "Call message.")
+	resultCommand := messageCommand.Command("result", "Result messages.")
+	registerCommand := messageCommand.Command("register", "Register message.")
+	registeredCommand := messageCommand.Command("registered", "Registered message.")
+	invocationCommand := messageCommand.Command("invocation", "Invocation message.")
+	yieldCommand := messageCommand.Command("yield", "Yield message.")
+	UnRegisterCommand := messageCommand.Command("unregister", "Unregister message.")
+	UnRegisteredCommand := messageCommand.Command("unregistered", "Unregistered message.")
 	c := &cmd{
 		output: app.Flag("output", "Format of the output.").Default("hex").
 			Enum(wampprotocli.HexFormat, wampprotocli.Base64Format),
@@ -81,6 +96,55 @@ func parseCmd(args []string) (*cmd, error) {
 			callArgs:      callCommand.Arg("args", "Arguments for the call.").Strings(),
 			callKwargs:    callCommand.Flag("kwargs", "Keyword argument for the call.").Short('k').StringMap(),
 			callOption:    callCommand.Flag("option", "Call options.").Short('o').StringMap(),
+		},
+
+		Result: &Result{
+			result:          resultCommand,
+			resultRequestID: resultCommand.Arg("request-id", "Result request ID.").Required().Int64(),
+			resultDetails:   resultCommand.Flag("details", "Result details.").Short('d').StringMap(),
+			resultArgs:      resultCommand.Arg("args", "Result Arguments").Strings(),
+			resultKwargs:    resultCommand.Flag("kwargs", "Result KW Arguments.").Short('k').StringMap(),
+		},
+
+		Register: &Register{
+			register:     registerCommand,
+			regRequestID: registerCommand.Arg("request-id", "Request request ID.").Required().Int64(),
+			regProcedure: registerCommand.Arg("procedure", "Procedure to register.").Required().String(),
+			regOptions:   registerCommand.Flag("option", "Register options.").Short('o').StringMap(),
+		},
+
+		Registered: &Registered{
+			registered:          registeredCommand,
+			registeredRequestID: registeredCommand.Arg("request-id", "Registered request ID.").Required().Int64(),
+			registrationID:      registeredCommand.Arg("registration-id", "Registration ID.").Required().Int64(),
+		},
+
+		Invocation: &Invocation{
+			invocation:        invocationCommand,
+			invRequestID:      invocationCommand.Arg("request-id", "Invocation request ID.").Required().Int64(),
+			invRegistrationID: invocationCommand.Arg("registration-id", "Invocation registration ID.").Required().Int64(),
+			invDetails:        invocationCommand.Flag("details", "Invocation details.").Short('d').StringMap(),
+			invArgs:           invocationCommand.Arg("args", "Invocation arguments.").Strings(),
+			invKwArgs:         invocationCommand.Flag("kwargs", "Invocation KW arguments.").Short('k').StringMap(),
+		},
+
+		Yield: &Yield{
+			yield:          yieldCommand,
+			yieldRequestID: yieldCommand.Arg("request-id", "Yield request ID.").Required().Int64(),
+			yieldOptions:   yieldCommand.Flag("option", "Yield options.").Short('o').StringMap(),
+			yieldArgs:      yieldCommand.Arg("args", "Yield arguments.").Strings(),
+			yieldKwArgs:    yieldCommand.Flag("kwargs", "Yield KW arguments.").Short('k').StringMap(),
+		},
+
+		UnRegister: &UnRegister{
+			unRegister:          UnRegisterCommand,
+			unRegRequestID:      UnRegisterCommand.Arg("request-id", "UnRegister request ID.").Required().Int64(),
+			unRegRegistrationID: UnRegisterCommand.Arg("registration-id", "UnRegister registration ID.").Required().Int64(),
+		},
+
+		UnRegistered: &UnRegistered{
+			unRegistered:          UnRegisteredCommand,
+			UnRegisteredRequestID: UnRegisteredCommand.Arg("request-id", "UnRegistered request ID.").Required().Int64(),
 		},
 	}
 
@@ -191,15 +255,96 @@ func Run(args []string) (string, error) {
 
 		callMessage := messages.NewCall(*c.callRequestID, options, *c.callURI, arguments, kwargs)
 
-		serializedMessage, err := serializer.Serialize(callMessage)
-		if err != nil {
-			return "", err
-		}
+		return serializeMessageAndOutput(serializer, callMessage, *c.output)
 
-		return wampprotocli.FormatOutputBytes(*c.output, serializedMessage)
+	case c.result.FullCommand():
+		var (
+			details   = wampprotocli.StringMapToTypedMap(*c.resultDetails)
+			arguments = wampprotocli.StringsToTypedList(*c.resultArgs)
+			kwargs    = wampprotocli.StringMapToTypedMap(*c.resultKwargs)
+
+			serializer = wampprotocli.SerializerByName(*c.serializer)
+		)
+
+		arguments, kwargs = wampprotocli.UpdateArgsKwArgsIfEmpty(arguments, kwargs)
+
+		resultMessage := messages.NewResult(*c.resultRequestID, details, arguments, kwargs)
+
+		return serializeMessageAndOutput(serializer, resultMessage, *c.output)
+
+	case c.register.FullCommand():
+		var (
+			options    = wampprotocli.StringMapToTypedMap(*c.regOptions)
+			serializer = wampprotocli.SerializerByName(*c.serializer)
+		)
+
+		regMessage := messages.NewRegister(*c.regRequestID, options, *c.regProcedure)
+
+		return serializeMessageAndOutput(serializer, regMessage, *c.output)
+
+	case c.registered.FullCommand():
+		var serializer = wampprotocli.SerializerByName(*c.serializer)
+
+		registeredCmd := messages.NewRegistered(*c.registeredRequestID, *c.registrationID)
+
+		return serializeMessageAndOutput(serializer, registeredCmd, *c.output)
+
+	case c.invocation.FullCommand():
+		var (
+			details   = wampprotocli.StringMapToTypedMap(*c.invDetails)
+			arguments = wampprotocli.StringsToTypedList(*c.invArgs)
+			kwargs    = wampprotocli.StringMapToTypedMap(*c.invKwArgs)
+
+			serializer = wampprotocli.SerializerByName(*c.serializer)
+		)
+
+		arguments, kwargs = wampprotocli.UpdateArgsKwArgsIfEmpty(arguments, kwargs)
+
+		invocationMessage := messages.NewInvocation(*c.invRequestID, *c.invRegistrationID, details, arguments, kwargs)
+
+		return serializeMessageAndOutput(serializer, invocationMessage, *c.output)
+
+	case c.yield.FullCommand():
+		var (
+			options   = wampprotocli.StringMapToTypedMap(*c.yieldOptions)
+			arguments = wampprotocli.StringsToTypedList(*c.yieldArgs)
+			kwargs    = wampprotocli.StringMapToTypedMap(*c.yieldKwArgs)
+
+			serializer = wampprotocli.SerializerByName(*c.serializer)
+		)
+
+		arguments, kwargs = wampprotocli.UpdateArgsKwArgsIfEmpty(arguments, kwargs)
+
+		yieldMessage := messages.NewYield(*c.yieldRequestID, options, arguments, kwargs)
+
+		return serializeMessageAndOutput(serializer, yieldMessage, *c.output)
+
+	case c.unRegister.FullCommand():
+		var serializer = wampprotocli.SerializerByName(*c.serializer)
+
+		unRegisterMessage := messages.NewUnRegister(*c.registeredRequestID, *c.unRegRegistrationID)
+
+		return serializeMessageAndOutput(serializer, unRegisterMessage, *c.output)
+
+	case c.unRegistered.FullCommand():
+		var serializer = wampprotocli.SerializerByName(*c.serializer)
+
+		unRegisteredMessage := messages.NewUnRegistered(*c.UnRegisteredRequestID)
+
+		return serializeMessageAndOutput(serializer, unRegisteredMessage, *c.output)
 	}
 
 	return "", nil
+}
+
+func serializeMessageAndOutput(serializer serializers.Serializer, message messages.Message,
+	outputFormat string) (string, error) {
+	serializedMessage, err := serializer.Serialize(message)
+	if err != nil {
+		return "", err
+	}
+
+	return wampprotocli.FormatOutputBytes(outputFormat, serializedMessage)
 }
 
 func main() {

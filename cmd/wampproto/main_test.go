@@ -214,9 +214,7 @@ func TestGenerateCryptoSignKeypair(t *testing.T) {
 	})
 }
 
-func TestCallMessage(t *testing.T) {
-	var command = "wampproto message call 1 io.xconn.test abc -k key:value abc=123"
-
+func testMessageCommand(t *testing.T, command string) {
 	t.Run("OutputHex", func(t *testing.T) {
 		output, err := main.Run(strings.Split(command, " "))
 		require.NoError(t, err)
@@ -256,6 +254,12 @@ func TestCallMessage(t *testing.T) {
 		_, err = hex.DecodeString(output)
 		require.NoError(t, err)
 	})
+}
+
+func TestCallMessage(t *testing.T) {
+	var command = "wampproto message call 1 io.xconn.test abc -k key:value abc=123"
+
+	testMessageCommand(t, command)
 
 	t.Run("NoArgsKwargs", func(t *testing.T) {
 		var cmd = "wampproto message call 1 io.xconn.test"
@@ -265,4 +269,82 @@ func TestCallMessage(t *testing.T) {
 		_, err = hex.DecodeString(output)
 		require.NoError(t, err)
 	})
+}
+
+func TestResultMessage(t *testing.T) {
+	var command = "wampproto message result 1"
+
+	testMessageCommand(t, command)
+
+	t.Run("WithArgsKwargsDetails", func(t *testing.T) {
+		var cmd = command + " abc def --details abc=def -k key:value abc=123"
+		output, err := main.Run(strings.Split(cmd, " "))
+		require.NoError(t, err)
+
+		_, err = hex.DecodeString(output)
+		require.NoError(t, err)
+	})
+}
+
+func TestRegisterMessage(t *testing.T) {
+	var command = "wampproto message register 1 io.xconn.test"
+
+	testMessageCommand(t, command)
+
+	t.Run("WithOptions", func(t *testing.T) {
+		var cmd = command + " -o invoke=roundrobin"
+		output, err := main.Run(strings.Split(cmd, " "))
+		require.NoError(t, err)
+
+		_, err = hex.DecodeString(output)
+		require.NoError(t, err)
+	})
+}
+
+func TestRegisteredMessage(t *testing.T) {
+	var command = "wampproto message registered 1 1"
+
+	testMessageCommand(t, command)
+}
+
+func TestInvocationMessage(t *testing.T) {
+	var command = "wampproto message invocation 1 1"
+
+	testMessageCommand(t, command)
+
+	t.Run("WithArgsKwargsDetails", func(t *testing.T) {
+		var cmd = command + " abc def --details abc=def -k key:value abc=123"
+		output, err := main.Run(strings.Split(cmd, " "))
+		require.NoError(t, err)
+
+		_, err = hex.DecodeString(output)
+		require.NoError(t, err)
+	})
+}
+
+func TestYieldMessage(t *testing.T) {
+	var command = "wampproto message yield 1"
+
+	testMessageCommand(t, command)
+
+	t.Run("WithArgsKwargsOptions", func(t *testing.T) {
+		var cmd = command + " abc def -o abc=def -k key:value abc=123"
+		output, err := main.Run(strings.Split(cmd, " "))
+		require.NoError(t, err)
+
+		_, err = hex.DecodeString(output)
+		require.NoError(t, err)
+	})
+}
+
+func TestUnRegisterMessage(t *testing.T) {
+	var command = "wampproto message unregister 1 1"
+
+	testMessageCommand(t, command)
+}
+
+func TestUnRegisteredMessage(t *testing.T) {
+	var command = "wampproto message unregistered 1"
+
+	testMessageCommand(t, command)
 }
