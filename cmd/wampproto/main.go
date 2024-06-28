@@ -266,6 +266,8 @@ func Run(args []string) (string, error) {
 			serializer = wampprotocli.SerializerByName(*c.serializer)
 		)
 
+		arguments, kwargs = wampprotocli.UpdateArgsKwArgsIfEmpty(arguments, kwargs)
+
 		resultMessage := messages.NewResult(*c.resultRequestID, details, arguments, kwargs)
 
 		return serializeMessageAndOutput(serializer, resultMessage, *c.output)
@@ -296,6 +298,8 @@ func Run(args []string) (string, error) {
 			serializer = wampprotocli.SerializerByName(*c.serializer)
 		)
 
+		arguments, kwargs = wampprotocli.UpdateArgsKwArgsIfEmpty(arguments, kwargs)
+
 		invocationMessage := messages.NewInvocation(*c.invRequestID, *c.invRegistrationID, details, arguments, kwargs)
 
 		return serializeMessageAndOutput(serializer, invocationMessage, *c.output)
@@ -308,6 +312,8 @@ func Run(args []string) (string, error) {
 
 			serializer = wampprotocli.SerializerByName(*c.serializer)
 		)
+
+		arguments, kwargs = wampprotocli.UpdateArgsKwArgsIfEmpty(arguments, kwargs)
 
 		yieldMessage := messages.NewYield(*c.yieldRequestID, options, arguments, kwargs)
 
