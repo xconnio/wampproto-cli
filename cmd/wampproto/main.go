@@ -186,6 +186,9 @@ func Run(args []string) (string, error) {
 
 			serializer = wampprotocli.SerializerByName(*c.serializer)
 		)
+
+		arguments, kwargs = wampprotocli.UpdateArgsKwArgsIfEmpty(arguments, kwargs)
+
 		callMessage := messages.NewCall(*c.callRequestID, options, *c.callURI, arguments, kwargs)
 
 		serializedMessage, err := serializer.Serialize(callMessage)

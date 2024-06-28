@@ -145,3 +145,40 @@ func TestStringMapToTypedMap(t *testing.T) {
 	result := wampprotocli.StringMapToTypedMap(input)
 	require.Equal(t, expected, result)
 }
+
+func TestUpdateArgsKwArgsIfEmpty(t *testing.T) {
+	t.Run("EmptyArgumentsAndKwargs", func(t *testing.T) {
+		args := []any{}
+		kwargs := map[string]any{}
+
+		updatedArgs, updatedKwargs := wampprotocli.UpdateArgsKwArgsIfEmpty(args, kwargs)
+		require.Nil(t, updatedArgs)
+		require.Nil(t, updatedKwargs)
+	})
+
+	t.Run("EmptyArgs", func(t *testing.T) {
+		args := []any{}
+		kwargs := map[string]any{"key": "value"}
+
+		updatedArgs, updatedKwargs := wampprotocli.UpdateArgsKwArgsIfEmpty(args, kwargs)
+		require.Equal(t, args, updatedArgs)
+		require.Equal(t, kwargs, updatedKwargs)
+	})
+
+	t.Run("EmptyKwargs", func(t *testing.T) {
+		args := []any{1, 2, 3}
+		kwargs := map[string]any{}
+
+		updatedArgs, updatedKwargs := wampprotocli.UpdateArgsKwArgsIfEmpty(args, kwargs)
+		wampprotocli.NilEqual(t, updatedKwargs, args, updatedArgs)
+	})
+
+	t.Run("NonEmptyArgumentsAndKwargs", func(t *testing.T) {
+		args := []any{1, 2, 3}
+		kwargs := map[string]any{"key": "value"}
+
+		updatedArgs, updatedKwargs := wampprotocli.UpdateArgsKwArgsIfEmpty(args, kwargs)
+		require.Equal(t, args, updatedArgs)
+		require.Equal(t, kwargs, updatedKwargs)
+	})
+}
