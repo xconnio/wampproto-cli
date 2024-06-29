@@ -61,3 +61,10 @@ type UnRegistered struct {
 	unRegistered          *kingpin.CmdClause
 	UnRegisteredRequestID *int64
 }
+
+type Subscribe struct {
+	subscribe          *kingpin.CmdClause
+	subscribeRequestID *int64
+	subscribeTopic     *string
+	subscribeOptions   *map[string]string
+}

@@ -344,3 +344,18 @@ func TestUnRegisteredMessage(t *testing.T) {
 
 	testMessageCommand(t, command)
 }
+
+func TestSubscribeMessage(t *testing.T) {
+	var command = "wampproto message subscribe 1 test"
+
+	testMessageCommand(t, command)
+
+	t.Run("WithOptions", func(t *testing.T) {
+		var cmd = command + " -o invoke=roundrobin"
+		output, err := main.Run(strings.Split(cmd, " "))
+		require.NoError(t, err)
+
+		_, err = hex.DecodeString(output)
+		require.NoError(t, err)
+	})
+}
