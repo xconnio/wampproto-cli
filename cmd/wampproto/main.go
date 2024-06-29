@@ -30,6 +30,7 @@ type cmd struct {
 	serializer *string
 	*Hello
 	*Welcome
+	*Challenge
 	*Call
 	*Result
 	*Register
@@ -55,6 +56,7 @@ func parseCmd(args []string) (*cmd, error) {
 	messageCommand := app.Command("message", "Wampproto messages.")
 	helloCommand := messageCommand.Command("hello", "Hello message.")
 	welcomeCommand := messageCommand.Command("welcome", "Welcome message.")
+	challengeCommand := messageCommand.Command("challenge", "Challenge message.")
 	callCommand := messageCommand.Command("call", "Call message.")
 	resultCommand := messageCommand.Command("result", "Result messages.")
 	registerCommand := messageCommand.Command("register", "Register message.")
@@ -73,9 +75,9 @@ func parseCmd(args []string) (*cmd, error) {
 			cryptosign:        cryptoSignCommand,
 			generateChallenge: cryptoSignCommand.Command("generate-challenge", "Generate a cryptosign challenge."),
 
-			signChallenge: signChallengeCommand,
-			challenge:     signChallengeCommand.Arg("challenge", "Challenge to sign.").Required().String(),
-			privateKey:    signChallengeCommand.Arg("private-key", "Private key to sign challenge.").Required().String(),
+			signChallenge:       signChallengeCommand,
+			cryptoSignChallenge: signChallengeCommand.Arg("challenge", "Challenge to sign.").Required().String(),
+			privateKey:          signChallengeCommand.Arg("private-key", "Private key to sign challenge.").Required().String(),
 
 			verifySignature: verifySignatureCommand,
 			signature:       verifySignatureCommand.Arg("signature", "Signature to verify.").Required().String(),
@@ -107,6 +109,13 @@ func parseCmd(args []string) (*cmd, error) {
 			welcome:        welcomeCommand,
 			sessionID:      welcomeCommand.Arg("session-id", "WAMP session ID.").Required().Int64(),
 			welcomeDetails: welcomeCommand.Flag("details", "Welcome details.").Short('d').StringMap(),
+		},
+
+		Challenge: &Challenge{
+			challenge: challengeCommand,
+			authMethod: challengeCommand.Arg("authmethod", "The authentication method.").Required().
+				Enum(wampprotocli.Anonymous, wampprotocli.Ticket, wampprotocli.WAMPCra, wampprotocli.CryptoSign),
+			challengeExtra: challengeCommand.Flag("extra", "Additional challenge data.").Short('e').StringMap(),
 		},
 
 		Call: &Call{
@@ -206,7 +215,7 @@ func Run(args []string) (string, error) {
 			privateKeyBytes = ed25519.NewKeyFromSeed(privateKeyBytes)
 		}
 
-		signedChallenge, err := auth.SignCryptoSignChallenge(*c.challenge, privateKeyBytes)
+		signedChallenge, err := auth.SignCryptoSignChallenge(*c.cryptoSignChallenge, privateKeyBytes)
 		if err != nil {
 			return "", err
 		}
@@ -284,6 +293,17 @@ func Run(args []string) (string, error) {
 		welcomeMessage := messages.NewWelcome(*c.sessionID, details)
 
 		return serializeMessageAndOutput(serializer, welcomeMessage, *c.output)
+
+	case c.challenge.FullCommand():
+		var (
+			challengeExtra = wampprotocli.StringMapToTypedMap(*c.challengeExtra)
+
+			serializer = wampprotocli.SerializerByName(*c.serializer)
+		)
+
+		challengeMessage := messages.NewChallenge(*c.authMethod, challengeExtra)
+
+		return serializeMessageAndOutput(serializer, challengeMessage, *c.output)
 
 	case c.call.FullCommand():
 		var (

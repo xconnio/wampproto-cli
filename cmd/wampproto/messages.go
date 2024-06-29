@@ -19,6 +19,12 @@ type Welcome struct {
 	welcomeDetails *map[string]string
 }
 
+type Challenge struct {
+	challenge      *kingpin.CmdClause
+	authMethod     *string
+	challengeExtra *map[string]string
+}
+
 type Call struct {
 	call          *kingpin.CmdClause
 	callRequestID *int64
