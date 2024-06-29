@@ -8,7 +8,7 @@ import (
 	"strconv"
 
 	"github.com/xconnio/wampproto-go/serializers"
-	"github.com/xconnio/wampproto-protobuf/go"
+	wampprotobuf "github.com/xconnio/wampproto-protobuf/go"
 )
 
 func HexToBase64(hexStr string) (string, error) {

@@ -7,7 +7,7 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/xconnio/wampproto-cli"
+	wampprotocli "github.com/xconnio/wampproto-cli"
 	"github.com/xconnio/wampproto-go/serializers"
 )
 

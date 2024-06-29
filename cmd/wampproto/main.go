@@ -8,7 +8,7 @@ import (
 
 	"github.com/alecthomas/kingpin/v2"
 
-	"github.com/xconnio/wampproto-cli"
+	wampprotocli "github.com/xconnio/wampproto-cli"
 	"github.com/xconnio/wampproto-go/auth"
 	"github.com/xconnio/wampproto-go/messages"
 	"github.com/xconnio/wampproto-go/serializers"
@@ -28,6 +28,15 @@ type cmd struct {
 
 	message    *kingpin.CmdClause
 	serializer *string
+	*Hello
+	*Welcome
+	*Challenge
+	*Authenticate
+	*Abort
+	*Error
+	*Interrupt
+	*Cancel
+	*GoodBye
 	*Call
 	*Result
 	*Register
@@ -51,6 +60,15 @@ func parseCmd(args []string) (*cmd, error) {
 		"Retrieve the ed25519 public key associated with the provided private key.")
 
 	messageCommand := app.Command("message", "Wampproto messages.")
+	helloCommand := messageCommand.Command("hello", "Hello message.")
+	welcomeCommand := messageCommand.Command("welcome", "Welcome message.")
+	challengeCommand := messageCommand.Command("challenge", "Challenge message.")
+	authenticateCommand := messageCommand.Command("authenticate", "Authenticate message.")
+	abortCommand := messageCommand.Command("abort", "Abort message.")
+	errorCommand := messageCommand.Command("error", "Error message.")
+	cancelCommand := messageCommand.Command("cancel", "Cancel message.")
+	interruptCommand := messageCommand.Command("interrupt", "Interrupt message.")
+	goodByeCommand := messageCommand.Command("goodbye", "Goodbye message.")
 	callCommand := messageCommand.Command("call", "Call message.")
 	resultCommand := messageCommand.Command("result", "Result messages.")
 	registerCommand := messageCommand.Command("register", "Register message.")
@@ -69,13 +87,13 @@ func parseCmd(args []string) (*cmd, error) {
 			cryptosign:        cryptoSignCommand,
 			generateChallenge: cryptoSignCommand.Command("generate-challenge", "Generate a cryptosign challenge."),
 
-			signChallenge: signChallengeCommand,
-			challenge:     signChallengeCommand.Arg("challenge", "Challenge to sign.").Required().String(),
-			privateKey:    signChallengeCommand.Arg("private-key", "Private key to sign challenge.").Required().String(),
+			signChallenge:       signChallengeCommand,
+			cryptoSignChallenge: signChallengeCommand.Arg("challenge", "Challenge to sign.").Required().String(),
+			privateKey:          signChallengeCommand.Arg("private-key", "Private key to sign challenge.").Required().String(),
 
-			verifySignature: verifySignatureCommand,
-			signature:       verifySignatureCommand.Arg("signature", "Signature to verify.").Required().String(),
-			publicKey:       verifySignatureCommand.Arg("public-key", "Public key to verify signature.").Required().String(),
+			verifySignature:     verifySignatureCommand,
+			cryptoSignSignature: verifySignatureCommand.Arg("signature", "Signature to verify.").Required().String(),
+			publicKey:           verifySignatureCommand.Arg("public-key", "Public key to verify signature.").Required().String(),
 
 			generateKeyPair: cryptoSignCommand.Command("keygen", "Generate a WAMP cryptosign ed25519 keypair."),
 
@@ -89,21 +107,87 @@ func parseCmd(args []string) (*cmd, error) {
 			Enum(wampprotocli.JsonSerializer, wampprotocli.CborSerializer, wampprotocli.MsgpackSerializer,
 				wampprotocli.ProtobufSerializer),
 
+		Hello: &Hello{
+			hello: helloCommand,
+			realm: helloCommand.Arg("realm", "The WAMP realm.").Required().String(),
+			authMethods: helloCommand.Arg("authmethods", "The authentication methods").Default(wampprotocli.Anonymous).
+				Enums(wampprotocli.Anonymous, wampprotocli.Ticket, wampprotocli.WAMPCra, wampprotocli.CryptoSign),
+			authID:    helloCommand.Flag("authid", "The authid.").Default("").String(),
+			authExtra: helloCommand.Flag("authextra", "Additional authentication data.").Short('e').StringMap(),
+			roles:     helloCommand.Flag("roles", "Client roles.").Short('r').StringMap(),
+		},
+
+		Welcome: &Welcome{
+			welcome:        welcomeCommand,
+			sessionID:      welcomeCommand.Arg("session-id", "WAMP session ID.").Required().Int64(),
+			welcomeDetails: welcomeCommand.Flag("detail", "Welcome details.").Short('d').StringMap(),
+		},
+
+		Challenge: &Challenge{
+			challenge: challengeCommand,
+			authMethod: challengeCommand.Arg("authmethod", "The authentication method.").Required().
+				Enum(wampprotocli.Anonymous, wampprotocli.Ticket, wampprotocli.WAMPCra, wampprotocli.CryptoSign),
+			challengeExtra: challengeCommand.Flag("extra", "Additional challenge data.").Short('e').StringMap(),
+		},
+
+		Authenticate: &Authenticate{
+			authenticate:      authenticateCommand,
+			signature:         authenticateCommand.Arg("signature", "Signature to authenticate.").Required().String(),
+			authenticateExtra: authenticateCommand.Flag("extra", "Additional authentication data.").Short('e').StringMap(),
+		},
+
+		Abort: &Abort{
+			abort:        abortCommand,
+			abortReason:  abortCommand.Arg("reason", "Reason to abort.").Required().String(),
+			abortDetails: abortCommand.Flag("detail", "Additional abort data.").Short('d').StringMap(),
+			abortArgs:    abortCommand.Arg("args", "Arguments of abort").Strings(),
+			abortKwArgs:  abortCommand.Flag("kwarg", "Keyword arguments of abort").Short('k').StringMap(),
+		},
+
+		Error: &Error{
+			error:       errorCommand,
+			messageType: errorCommand.Arg("message-type", "The ID of message associated with the error.").Required().Int64(),
+			errorRequestID: errorCommand.Arg("request-id", "The ID of the request that resulted in the error").
+				Required().Int64(),
+			errorDetails: errorCommand.Flag("detail", "Additional error data.").Short('d').StringMap(),
+			errorUri:     errorCommand.Arg("uri", "Error URI.").Required().String(),
+			errorArgs:    errorCommand.Arg("args", "Arguments of error.").Strings(),
+			errorKwArgs:  errorCommand.Flag("kwarg", "Keyword arguments of error.").Short('k').StringMap(),
+		},
+
+		Cancel: &Cancel{
+			cancel:          cancelCommand,
+			cancelRequestID: cancelCommand.Arg("request-id", "The ID of request to cancel.").Required().Int64(),
+			cancelOptions:   cancelCommand.Flag("option", "Cancel options.").Short('o').StringMap(),
+		},
+
+		Interrupt: &Interrupt{
+			interrupt:          interruptCommand,
+			interruptRequestID: interruptCommand.Arg("request-id", "The ID of request to interrupt.").Required().Int64(),
+			interruptOptions:   interruptCommand.Flag("option", "Interrupt options.").Short('o').StringMap(),
+		},
+
+		GoodBye: &GoodBye{
+			goodBye:        goodByeCommand,
+			goodByeReason:  goodByeCommand.Arg("reason", "GoodBye reason.").Required().String(),
+			goodByeDetails: goodByeCommand.Flag("detail", "GoodBye details.").Short('d').StringMap(),
+		},
+
 		Call: &Call{
 			call:          callCommand,
 			callRequestID: callCommand.Arg("request-id", "Call request ID.").Required().Int64(),
 			callURI:       callCommand.Arg("procedure", "Procedure to call.").Required().String(),
 			callArgs:      callCommand.Arg("args", "Arguments for the call.").Strings(),
-			callKwargs:    callCommand.Flag("kwargs", "Keyword argument for the call.").Short('k').StringMap(),
+			callKwargs:    callCommand.Flag("kwarg", "Keyword argument for the call.").Short('k').StringMap(),
 			callOption:    callCommand.Flag("option", "Call options.").Short('o').StringMap(),
 		},
 
 		Result: &Result{
 			result:          resultCommand,
 			resultRequestID: resultCommand.Arg("request-id", "Result request ID.").Required().Int64(),
-			resultDetails:   resultCommand.Flag("details", "Result details.").Short('d').StringMap(),
+			resultDetails:   resultCommand.Flag("detail", "Result details.").Short('d').StringMap(),
 			resultArgs:      resultCommand.Arg("args", "Result Arguments").Strings(),
-			resultKwargs:    resultCommand.Flag("kwargs", "Result KW Arguments.").Short('k').StringMap(),
+			resultKwargs:    resultCommand.Flag("kwarg", "Result KW Arguments.").Short('k').StringMap(),
 		},
 
 		Register: &Register{
@@ -123,9 +207,9 @@ func parseCmd(args []string) (*cmd, error) {
 			invocation:        invocationCommand,
 			invRequestID:      invocationCommand.Arg("request-id", "Invocation request ID.").Required().Int64(),
 			invRegistrationID: invocationCommand.Arg("registration-id", "Invocation registration ID.").Required().Int64(),
-			invDetails:        invocationCommand.Flag("details", "Invocation details.").Short('d').StringMap(),
+			invDetails:        invocationCommand.Flag("detail", "Invocation details.").Short('d').StringMap(),
 			invArgs:           invocationCommand.Arg("args", "Invocation arguments.").Strings(),
-			invKwArgs:         invocationCommand.Flag("kwargs", "Invocation KW arguments.").Short('k').StringMap(),
+			invKwArgs:         invocationCommand.Flag("kwarg", "Invocation KW arguments.").Short('k').StringMap(),
 		},
 
 		Yield: &Yield{
@@ -133,7 +217,7 @@ func parseCmd(args []string) (*cmd, error) {
 			yieldRequestID: yieldCommand.Arg("request-id", "Yield request ID.").Required().Int64(),
 			yieldOptions:   yieldCommand.Flag("option", "Yield options.").Short('o').StringMap(),
 			yieldArgs:      yieldCommand.Arg("args", "Yield arguments.").Strings(),
-			yieldKwArgs:    yieldCommand.Flag("kwargs", "Yield KW arguments.").Short('k').StringMap(),
+			yieldKwArgs:    yieldCommand.Flag("kwarg", "Yield KW arguments.").Short('k').StringMap(),
 		},
 
 		UnRegister: &UnRegister{
@@ -186,7 +270,7 @@ func Run(args []string) (string, error) {
 			privateKeyBytes = ed25519.NewKeyFromSeed(privateKeyBytes)
 		}
 
-		signedChallenge, err := auth.SignCryptoSignChallenge(*c.challenge, privateKeyBytes)
+		signedChallenge, err := auth.SignCryptoSignChallenge(*c.cryptoSignChallenge, privateKeyBytes)
 		if err != nil {
 			return "", err
 		}
@@ -203,7 +287,7 @@ func Run(args []string) (string, error) {
 			return "", fmt.Errorf("invalid public-key: must be of length 32")
 		}
 
-		isVerified, err := auth.VerifyCryptoSignSignature(*c.signature, publicKeyBytes)
+		isVerified, err := auth.VerifyCryptoSignSignature(*c.cryptoSignSignature, publicKeyBytes)
 		if err != nil {
 			return "", err
 		}
@@ -241,6 +325,110 @@ func Run(args []string) (string, error) {
 		publicKeyBytes := ed25519.NewKeyFromSeed(privateKeyBytes).Public().(ed25519.PublicKey)
 
 		return wampprotocli.FormatOutputBytes(*c.output, publicKeyBytes)
+
+	case c.hello.FullCommand():
+		var (
+			authExtra = wampprotocli.StringMapToTypedMap(*c.authExtra)
+			roles     = wampprotocli.StringMapToTypedMap(*c.roles)
+
+			serializer = wampprotocli.SerializerByName(*c.serializer)
+		)
+
+		helloMessage := messages.NewHello(*c.realm, *c.authID, authExtra, roles, *c.authMethods)
+
+		return serializeMessageAndOutput(serializer, helloMessage, *c.output)
+
+	case c.welcome.FullCommand():
+		var (
+			details = wampprotocli.StringMapToTypedMap(*c.welcomeDetails)
+
+			serializer = wampprotocli.SerializerByName(*c.serializer)
+		)
+
+		welcomeMessage := messages.NewWelcome(*c.sessionID, details)
+
+		return serializeMessageAndOutput(serializer, welcomeMessage, *c.output)
+
+	case c.challenge.FullCommand():
+		var (
+			challengeExtra = wampprotocli.StringMapToTypedMap(*c.challengeExtra)
+
+			serializer = wampprotocli.SerializerByName(*c.serializer)
+		)
+
+		challengeMessage := messages.NewChallenge(*c.authMethod, challengeExtra)
+
+		return serializeMessageAndOutput(serializer, challengeMessage, *c.output)
+
+	case c.authenticate.FullCommand():
+		var (
+			authenticateExtra = wampprotocli.StringMapToTypedMap(*c.authenticateExtra)
+
+			serializer = wampprotocli.SerializerByName(*c.serializer)
+		)
+
+		authenticateMessage := messages.NewAuthenticate(*c.signature, authenticateExtra)
+
+		return serializeMessageAndOutput(serializer, authenticateMessage, *c.output)
+
+	case c.abort.FullCommand():
+		var (
+			abortDetails = wampprotocli.StringMapToTypedMap(*c.abortDetails)
+			abortArgs    = wampprotocli.StringsToTypedList(*c.abortArgs)
+			abortKwargs  = wampprotocli.StringMapToTypedMap(*c.abortKwArgs)
+
+			serializer = wampprotocli.SerializerByName(*c.serializer)
+		)
+
+		abortMessage := messages.NewAbort(abortDetails, *c.abortReason, abortArgs, abortKwargs)
+
+		return serializeMessageAndOutput(serializer, abortMessage, *c.output)
+
+	case c.error.FullCommand():
+		var (
+			errorDetails = wampprotocli.StringMapToTypedMap(*c.errorDetails)
+			errorArgs    = wampprotocli.StringsToTypedList(*c.errorArgs)
+			errorKwargs  = wampprotocli.StringMapToTypedMap(*c.errorKwArgs)
+
+			serializer = wampprotocli.SerializerByName(*c.serializer)
+		)
+
+		errorMessage := messages.NewError(*c.messageType, *c.errorRequestID, errorDetails, *c.errorUri, errorArgs,
+			errorKwargs)
+
+		return serializeMessageAndOutput(serializer, errorMessage, *c.output)
+
+	case c.cancel.FullCommand():
+		var (
+			cancelOptions = wampprotocli.StringMapToTypedMap(*c.cancelOptions)
+
+			serializer = wampprotocli.SerializerByName(*c.serializer)
+		)
+
+		cancelMessage := messages.NewCancel(*c.sessionID, cancelOptions)
+
+		return serializeMessageAndOutput(serializer, cancelMessage, *c.output)
+
+	case c.interrupt.FullCommand():
+		var (
+			interruptOptions = wampprotocli.StringMapToTypedMap(*c.interruptOptions)
+
+			serializer = wampprotocli.SerializerByName(*c.serializer)
+		)
+
+		interruptMessage := messages.NewInterrupt(*c.sessionID, interruptOptions)
+
+		return serializeMessageAndOutput(serializer, interruptMessage, *c.output)
+
+	case c.goodBye.FullCommand():
+		var (
+			goodByeDetails = wampprotocli.StringMapToTypedMap(*c.goodByeDetails)
+
+			serializer = wampprotocli.SerializerByName(*c.serializer)
+		)
+		goodByeMessage := messages.NewGoodBye(*c.goodByeReason, goodByeDetails)
+
+		return serializeMessageAndOutput(serializer, goodByeMessage, *c.output)
 
 	case c.call.FullCommand():
 		var (

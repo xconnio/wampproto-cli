@@ -7,13 +7,13 @@ type CryptoSign struct {
 
 	generateChallenge *kingpin.CmdClause
 
-	signChallenge *kingpin.CmdClause
-	challenge     *string
-	privateKey    *string
+	signChallenge       *kingpin.CmdClause
+	cryptoSignChallenge *string
+	privateKey          *string
 
-	verifySignature *kingpin.CmdClause
-	signature       *string
-	publicKey       *string
+	verifySignature     *kingpin.CmdClause
+	cryptoSignSignature *string
+	publicKey           *string
 
 	generateKeyPair *kingpin.CmdClause
 

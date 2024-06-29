@@ -4,6 +4,69 @@ import (
 	"github.com/alecthomas/kingpin/v2"
 )
 
+type Hello struct {
+	hello       *kingpin.CmdClause
+	realm       *string
+	authID      *string
+	authMethods *[]string
+	authExtra   *map[string]string
+	roles       *map[string]string
+}
+
+type Welcome struct {
+	welcome        *kingpin.CmdClause
+	sessionID      *int64
+	welcomeDetails *map[string]string
+}
+
+type Challenge struct {
+	challenge      *kingpin.CmdClause
+	authMethod     *string
+	challengeExtra *map[string]string
+}
+
+type Authenticate struct {
+	authenticate      *kingpin.CmdClause
+	signature         *string
+	authenticateExtra *map[string]string
+}
+
+type Abort struct {
+	abort        *kingpin.CmdClause
+	abortDetails *map[string]string
+	abortReason  *string
+	abortArgs    *[]string
+	abortKwArgs  *map[string]string
+}
+
+type Error struct {
+	error          *kingpin.CmdClause
+	messageType    *int64
+	errorRequestID *int64
+	errorDetails   *map[string]string
+	errorUri       *string
+	errorArgs      *[]string
+	errorKwArgs    *map[string]string
+}
+
+type Cancel struct {
+	cancel          *kingpin.CmdClause
+	cancelRequestID *int64
+	cancelOptions   *map[string]string
+}
+
+type Interrupt struct {
+	interrupt          *kingpin.CmdClause
+	interruptRequestID *int64
+	interruptOptions   *map[string]string
+}
+
+type GoodBye struct {
+	goodBye        *kingpin.CmdClause
+	goodByeReason  *string
+	goodByeDetails *map[string]string
+}
+
 type Call struct {
 	call          *kingpin.CmdClause
 	callRequestID *int64

@@ -9,8 +9,8 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/xconnio/wampproto-cli"
-	"github.com/xconnio/wampproto-cli/cmd/wampproto"
+	wampprotocli "github.com/xconnio/wampproto-cli"
+	main "github.com/xconnio/wampproto-cli/cmd/wampproto"
 )
 
 func TestRunGenerateChallenge(t *testing.T) {
@@ -252,6 +252,142 @@ func testMessageCommand(t *testing.T, command string) {
 	})
 }
 
+func TestHelloMessage(t *testing.T) {
+	var command = "wampproto message hello realm1 anonymous ticket wampcra --authid 1 -e abc:xyz --authextra foo:bar " +
+		"--roles caller:true -r callee:false"
+
+	testMessageCommand(t, command)
+
+	t.Run("NoAuthExtraNoRoles", func(t *testing.T) {
+		var cmd = "wampproto message hello realm1 anonymous ticket wampcra"
+		output, err := main.Run(strings.Split(cmd, " "))
+		require.NoError(t, err)
+
+		_, err = hex.DecodeString(output)
+		require.NoError(t, err)
+	})
+}
+
+func TestWelcomeMessage(t *testing.T) {
+	var command = "wampproto message welcome 1 -d foo:bar -d 123:true"
+
+	testMessageCommand(t, command)
+
+	t.Run("NoDetails", func(t *testing.T) {
+		var cmd = "wampproto message welcome 1"
+		output, err := main.Run(strings.Split(cmd, " "))
+		require.NoError(t, err)
+
+		_, err = hex.DecodeString(output)
+		require.NoError(t, err)
+	})
+}
+
+func TestChallengeMessage(t *testing.T) {
+	var command = "wampproto message challenge wampcra -e challenge:bar -e foo:true"
+
+	testMessageCommand(t, command)
+
+	t.Run("NoExtra", func(t *testing.T) {
+		var cmd = "wampproto message challenge cryptosign"
+		output, err := main.Run(strings.Split(cmd, " "))
+		require.NoError(t, err)
+
+		_, err = hex.DecodeString(output)
+		require.NoError(t, err)
+	})
+}
+
+func TestAuthenticateMessage(t *testing.T) {
+	var command = "wampproto message authenticate abc -e abc:123 -e foo:bar"
+
+	testMessageCommand(t, command)
+
+	t.Run("NoExtra", func(t *testing.T) {
+		var cmd = "wampproto message authenticate abc"
+		output, err := main.Run(strings.Split(cmd, " "))
+		require.NoError(t, err)
+
+		_, err = hex.DecodeString(output)
+		require.NoError(t, err)
+	})
+}
+
+func TestAbortMessage(t *testing.T) {
+	var command = "wampproto message abort noreason abc 123 true -d abc:123 -k foo:bar"
+
+	testMessageCommand(t, command)
+
+	t.Run("NoArgsKwargsDetails", func(t *testing.T) {
+		var cmd = "wampproto message abort noreason"
+		output, err := main.Run(strings.Split(cmd, " "))
+		require.NoError(t, err)
+
+		_, err = hex.DecodeString(output)
+		require.NoError(t, err)
+	})
+}
+
+func TestErrorMessage(t *testing.T) {
+	var command = "wampproto message error 1 1 wamp.error abc true -d abc:123 -k foo:bar"
+
+	testMessageCommand(t, command)
+
+	t.Run("NoArgsKwargsDetails", func(t *testing.T) {
+		var cmd = "wampproto message error 1 1 wamp.error"
+		output, err := main.Run(strings.Split(cmd, " "))
+		require.NoError(t, err)
+
+		_, err = hex.DecodeString(output)
+		require.NoError(t, err)
+	})
+}
+
+func TestCancelMessage(t *testing.T) {
+	var command = "wampproto message cancel 1 --option abc:123 -o foo:bar"
+
+	testMessageCommand(t, command)
+
+	t.Run("NoOptions", func(t *testing.T) {
+		var cmd = "wampproto message cancel 1"
+		output, err := main.Run(strings.Split(cmd, " "))
+		require.NoError(t, err)
+
+		_, err = hex.DecodeString(output)
+		require.NoError(t, err)
+	})
+}
+
+func TestInterruptMessage(t *testing.T) {
+	var command = "wampproto message interrupt 1 --option abc:123 -o foo:bar"
+
+	testMessageCommand(t, command)
+
+	t.Run("NoOptions", func(t *testing.T) {
+		var cmd = "wampproto message interrupt 1"
+		output, err := main.Run(strings.Split(cmd, " "))
+		require.NoError(t, err)
+
+		_, err = hex.DecodeString(output)
+		require.NoError(t, err)
+	})
+}
+
+func TestGoodByeMessage(t *testing.T) {
+	var command = "wampproto message goodbye unknown --detail abc:123 -d foo:bar"
+
+	testMessageCommand(t, command)
+
+	t.Run("NoDetails", func(t *testing.T) {
+		var cmd = "wampproto message goodbye unknown"
+		output, err := main.Run(strings.Split(cmd, " "))
+		require.NoError(t, err)
+
+		_, err = hex.DecodeString(output)
+		require.NoError(t, err)
+	})
+}
+
 func TestCallMessage(t *testing.T) {
 	var command = "wampproto message call 1 io.xconn.test abc -k key:value abc=123"
 
@@ -273,7 +409,7 @@ func TestResultMessage(t *testing.T) {
 	testMessageCommand(t, command)
 
 	t.Run("WithArgsKwargsDetails", func(t *testing.T) {
-		var cmd = command + " abc def --details abc=def -k key:value abc=123"
+		var cmd = command + " abc def --detail abc=def -k key:value abc=123"
 		output, err := main.Run(strings.Split(cmd, " "))
 		require.NoError(t, err)
 
@@ -309,7 +445,7 @@ func TestInvocationMessage(t *testing.T) {
 	testMessageCommand(t, command)
 
 	t.Run("WithArgsKwargsDetails", func(t *testing.T) {
-		var cmd = command + " abc def --details abc=def -k key:value abc=123"
+		var cmd = command + " abc def --detail abc=def -k key:value abc=123"
 		output, err := main.Run(strings.Split(cmd, " "))
 		require.NoError(t, err)
 
