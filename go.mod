@@ -5,7 +5,7 @@ go 1.20
 require (
 	github.com/alecthomas/kingpin/v2 v2.4.0
 	github.com/stretchr/testify v1.8.2
-	github.com/xconnio/wampproto-go v0.0.0-20240611083555-4bcae9e441a3
+	github.com/xconnio/wampproto-go v0.0.0-20240629093927-184b8a81377e
 	github.com/xconnio/wampproto-protobuf/go v0.0.0-20240612091106-3982f61b08e3
 )
 
