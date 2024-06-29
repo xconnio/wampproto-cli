@@ -89,3 +89,12 @@ type Published struct {
 	publishedRequestID *int64
 	publicationID      *int64
 }
+
+type Event struct {
+	event               *kingpin.CmdClause
+	eventSubscriptionID *int64
+	eventPublicationID  *int64
+	eventDetails        *map[string]string
+	eventArgs           *[]string
+	eventKwArgs         *map[string]string
+}

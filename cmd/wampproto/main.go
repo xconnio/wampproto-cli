@@ -40,6 +40,7 @@ type cmd struct {
 	*Subscribed
 	*Publish
 	*Published
+	*Event
 }
 
 func parseCmd(args []string) (*cmd, error) {
@@ -67,6 +68,7 @@ func parseCmd(args []string) (*cmd, error) {
 	subscribedCommand := messageCommand.Command("subscribed", "Subscribed message.")
 	publishCommand := messageCommand.Command("publish", "Publish message.")
 	publishedCommand := messageCommand.Command("published", "Published message.")
+	eventCommand := messageCommand.Command("event", "Event message.")
 	c := &cmd{
 		output: app.Flag("output", "Format of the output.").Default("hex").
 			Enum(wampprotocli.HexFormat, wampprotocli.Base64Format),
@@ -174,13 +176,22 @@ func parseCmd(args []string) (*cmd, error) {
 			publishTopic:     publishCommand.Arg("topic", "Publish topic.").Required().String(),
 			publishOptions:   publishCommand.Flag("option", "Publish options.").Short('o').StringMap(),
 			publishArgs:      publishCommand.Arg("args", "Publish arguments.").Strings(),
-			publishKwArgs:    publishCommand.Flag("kwargs", "Publish Keyword arguments.").Short('k').StringMap(),
+			publishKwArgs:    publishCommand.Flag("kwarg", "Publish Keyword arguments.").Short('k').StringMap(),
 		},
 
 		Published: &Published{
 			published:          publishedCommand,
 			publishedRequestID: publishedCommand.Arg("request-id", "Published request ID.").Required().Int64(),
 			publicationID:      publishedCommand.Arg("publication-id", "Publication ID.").Required().Int64(),
+		},
+
+		Event: &Event{
+			event:               eventCommand,
+			eventSubscriptionID: eventCommand.Arg("subscription-id", "Event subscription ID.").Required().Int64(),
+			eventPublicationID:  eventCommand.Arg("publication-id", "Event publication ID.").Required().Int64(),
+			eventDetails:        eventCommand.Flag("detail", "Event details.").Short('d').StringMap(),
+			eventArgs:           eventCommand.Arg("args", "Event arguments.").Strings(),
+			eventKwArgs:         eventCommand.Flag("kwarg", "Event Keyword arguments.").Short('k').StringMap(),
 		},
 	}
 
@@ -407,6 +418,19 @@ func Run(args []string) (string, error) {
 		publishedMessage := messages.NewPublished(*c.publishedRequestID, *c.publicationID)
 
 		return serializeMessageAndOutput(serializer, publishedMessage, *c.output)
+
+	case c.event.FullCommand():
+		var (
+			eventDetails = wampprotocli.StringMapToTypedMap(*c.eventDetails)
+			eventArgs    = wampprotocli.StringsToTypedList(*c.eventArgs)
+			eventKwargs  = wampprotocli.StringMapToTypedMap(*c.eventKwArgs)
+
+			serializer = wampprotocli.SerializerByName(*c.serializer)
+		)
+
+		eventMessage := messages.NewEvent(*c.subscriptionID, *c.publishRequestID, eventDetails, eventArgs, eventKwargs)
+
+		return serializeMessageAndOutput(serializer, eventMessage, *c.output)
 	}
 
 	return "", nil
