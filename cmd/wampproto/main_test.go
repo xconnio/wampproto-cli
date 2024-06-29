@@ -298,6 +298,21 @@ func TestChallengeMessage(t *testing.T) {
 	})
 }
 
+func TestAuthenticateCommand(t *testing.T) {
+	var command = "wampproto message authenticate abc -e abc:123 -e foo:bar"
+
+	testMessageCommand(t, command)
+
+	t.Run("NoExtra", func(t *testing.T) {
+		var cmd = "wampproto message authenticate abc"
+		output, err := main.Run(strings.Split(cmd, " "))
+		require.NoError(t, err)
+
+		_, err = hex.DecodeString(output)
+		require.NoError(t, err)
+	})
+}
+
 func TestCallMessage(t *testing.T) {
 	var command = "wampproto message call 1 io.xconn.test abc -k key:value abc=123"
 

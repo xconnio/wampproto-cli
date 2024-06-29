@@ -25,6 +25,12 @@ type Challenge struct {
 	challengeExtra *map[string]string
 }
 
+type Authenticate struct {
+	authenticate      *kingpin.CmdClause
+	signature         *string
+	authenticateExtra *map[string]string
+}
+
 type Call struct {
 	call          *kingpin.CmdClause
 	callRequestID *int64

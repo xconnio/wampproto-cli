@@ -31,6 +31,7 @@ type cmd struct {
 	*Hello
 	*Welcome
 	*Challenge
+	*Authenticate
 	*Call
 	*Result
 	*Register
@@ -57,6 +58,7 @@ func parseCmd(args []string) (*cmd, error) {
 	helloCommand := messageCommand.Command("hello", "Hello message.")
 	welcomeCommand := messageCommand.Command("welcome", "Welcome message.")
 	challengeCommand := messageCommand.Command("challenge", "Challenge message.")
+	authenticateCommand := messageCommand.Command("authenticate", "Authenticate message.")
 	callCommand := messageCommand.Command("call", "Call message.")
 	resultCommand := messageCommand.Command("result", "Result messages.")
 	registerCommand := messageCommand.Command("register", "Register message.")
@@ -79,9 +81,9 @@ func parseCmd(args []string) (*cmd, error) {
 			cryptoSignChallenge: signChallengeCommand.Arg("challenge", "Challenge to sign.").Required().String(),
 			privateKey:          signChallengeCommand.Arg("private-key", "Private key to sign challenge.").Required().String(),
 
-			verifySignature: verifySignatureCommand,
-			signature:       verifySignatureCommand.Arg("signature", "Signature to verify.").Required().String(),
-			publicKey:       verifySignatureCommand.Arg("public-key", "Public key to verify signature.").Required().String(),
+			verifySignature:     verifySignatureCommand,
+			cryptoSignSignature: verifySignatureCommand.Arg("signature", "Signature to verify.").Required().String(),
+			publicKey:           verifySignatureCommand.Arg("public-key", "Public key to verify signature.").Required().String(),
 
 			generateKeyPair: cryptoSignCommand.Command("keygen", "Generate a WAMP cryptosign ed25519 keypair."),
 
@@ -116,6 +118,12 @@ func parseCmd(args []string) (*cmd, error) {
 			authMethod: challengeCommand.Arg("authmethod", "The authentication method.").Required().
 				Enum(wampprotocli.Anonymous, wampprotocli.Ticket, wampprotocli.WAMPCra, wampprotocli.CryptoSign),
 			challengeExtra: challengeCommand.Flag("extra", "Additional challenge data.").Short('e').StringMap(),
+		},
+
+		Authenticate: &Authenticate{
+			authenticate:      authenticateCommand,
+			signature:         authenticateCommand.Arg("signature", "Signature to authenticate.").Required().String(),
+			authenticateExtra: authenticateCommand.Flag("extra", "Additional authentication data.").Short('e').StringMap(),
 		},
 
 		Call: &Call{
@@ -232,7 +240,7 @@ func Run(args []string) (string, error) {
 			return "", fmt.Errorf("invalid public-key: must be of length 32")
 		}
 
-		isVerified, err := auth.VerifyCryptoSignSignature(*c.signature, publicKeyBytes)
+		isVerified, err := auth.VerifyCryptoSignSignature(*c.cryptoSignSignature, publicKeyBytes)
 		if err != nil {
 			return "", err
 		}
@@ -304,6 +312,17 @@ func Run(args []string) (string, error) {
 		challengeMessage := messages.NewChallenge(*c.authMethod, challengeExtra)
 
 		return serializeMessageAndOutput(serializer, challengeMessage, *c.output)
+
+	case c.authenticate.FullCommand():
+		var (
+			authenticateExtra = wampprotocli.StringMapToTypedMap(*c.authenticateExtra)
+
+			serializer = wampprotocli.SerializerByName(*c.serializer)
+		)
+
+		authenticateMessage := messages.NewAuthenticate(*c.signature, authenticateExtra)
+
+		return serializeMessageAndOutput(serializer, authenticateMessage, *c.output)
 
 	case c.call.FullCommand():
 		var (

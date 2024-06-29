@@ -11,9 +11,9 @@ type CryptoSign struct {
 	cryptoSignChallenge *string
 	privateKey          *string
 
-	verifySignature *kingpin.CmdClause
-	signature       *string
-	publicKey       *string
+	verifySignature     *kingpin.CmdClause
+	cryptoSignSignature *string
+	publicKey           *string
 
 	generateKeyPair *kingpin.CmdClause
 
