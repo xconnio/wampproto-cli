@@ -407,3 +407,9 @@ func TestUnSubscribeMessage(t *testing.T) {
 
 	testMessageCommand(t, command)
 }
+
+func TestUnSubscribedMessage(t *testing.T) {
+	var command = "wampproto message unsubscribed 1"
+
+	testMessageCommand(t, command)
+}

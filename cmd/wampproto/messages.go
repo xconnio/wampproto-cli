@@ -104,3 +104,8 @@ type UnSubscribe struct {
 	unSubscribeRequestID      *int64
 	unSubscribeSubscriptionID *int64
 }
+
+type UnSubscribed struct {
+	unSubscribed          *kingpin.CmdClause
+	unSubscribedRequestID *int64
+}

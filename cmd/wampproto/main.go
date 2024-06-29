@@ -42,6 +42,7 @@ type cmd struct {
 	*Published
 	*Event
 	*UnSubscribe
+	*UnSubscribed
 }
 
 func parseCmd(args []string) (*cmd, error) {
@@ -71,6 +72,7 @@ func parseCmd(args []string) (*cmd, error) {
 	publishedCommand := messageCommand.Command("published", "Published message.")
 	eventCommand := messageCommand.Command("event", "Event message.")
 	unSubscribeCommand := messageCommand.Command("unsubscribe", "Unsubscribe message.")
+	unSubscribedCommand := messageCommand.Command("unsubscribed", "Unsubscribed message.")
 	c := &cmd{
 		output: app.Flag("output", "Format of the output.").Default("hex").
 			Enum(wampprotocli.HexFormat, wampprotocli.Base64Format),
@@ -201,6 +203,11 @@ func parseCmd(args []string) (*cmd, error) {
 			unSubscribeRequestID: unSubscribeCommand.Arg("request-id", "UnSubscribe request ID.").Required().Int64(),
 			unSubscribeSubscriptionID: unSubscribeCommand.Arg("subscription-id", "UnSubscribe subscription ID.").
 				Required().Int64(),
+		},
+
+		UnSubscribed: &UnSubscribed{
+			unSubscribed:          unSubscribedCommand,
+			unSubscribedRequestID: unSubscribedCommand.Arg("request-id", "UnSubscribed request ID.").Required().Int64(),
 		},
 	}
 
@@ -447,6 +454,14 @@ func Run(args []string) (string, error) {
 		unSubscribeMessage := messages.NewUnSubscribe(*c.unSubscribeRequestID, *c.unSubscribeSubscriptionID)
 
 		return serializeMessageAndOutput(serializer, unSubscribeMessage, *c.output)
+
+	case c.unSubscribed.FullCommand():
+		var serializer = wampprotocli.SerializerByName(*c.serializer)
+
+		unSubscribedMessage := messages.NewUnSubscribed(*c.unSubscribedRequestID)
+
+		return serializeMessageAndOutput(serializer, unSubscribedMessage, *c.output)
+
 	}
 
 	return "", nil
