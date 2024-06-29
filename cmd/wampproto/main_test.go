@@ -401,3 +401,9 @@ func TestEventMessage(t *testing.T) {
 		require.NoError(t, err)
 	})
 }
+
+func TestUnSubscribeMessage(t *testing.T) {
+	var command = "wampproto message unsubscribe 1 1"
+
+	testMessageCommand(t, command)
+}

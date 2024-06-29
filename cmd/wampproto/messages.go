@@ -98,3 +98,9 @@ type Event struct {
 	eventArgs           *[]string
 	eventKwArgs         *map[string]string
 }
+
+type UnSubscribe struct {
+	unSubscribe               *kingpin.CmdClause
+	unSubscribeRequestID      *int64
+	unSubscribeSubscriptionID *int64
+}
