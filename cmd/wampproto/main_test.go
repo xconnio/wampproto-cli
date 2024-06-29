@@ -258,6 +258,32 @@ func TestDeriveCRAKey(t *testing.T) {
 	})
 }
 
+func TestSignCRAChallenge(t *testing.T) {
+	const testCRAKey = "6339432b4a757771534b667448736141457530754f70337a4a50512f705070477649456677596730726e773d"
+
+	var command = fmt.Sprintf("wampproto auth cra sign-challenge foobar %s", testCRAKey)
+
+	t.Run("OutputHex", func(t *testing.T) {
+		challenge, err := main.Run(strings.Split(command, " "))
+		require.NoError(t, err)
+
+		// validate that the output is a validate hex string
+		_, err = hex.DecodeString(challenge)
+		require.NoError(t, err)
+	})
+
+	t.Run("OutputBase64", func(t *testing.T) {
+		command = command + " --output base64"
+
+		challenge, err := main.Run(strings.Split(command, " "))
+		require.NoError(t, err)
+
+		// validate that the output is a valid base64 string
+		_, err = base64.StdEncoding.DecodeString(challenge)
+		require.NoError(t, err)
+	})
+}
+
 func testMessageCommand(t *testing.T, command string) {
 	t.Run("OutputHex", func(t *testing.T) {
 		output, err := main.Run(strings.Split(command, " "))

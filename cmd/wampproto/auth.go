@@ -35,4 +35,8 @@ type CRA struct {
 	secret    *string
 	iteration *int
 	keylen    *int
+
+	signCRAChallenge *kingpin.CmdClause
+	craChallenge     *string
+	craKey           *string
 }
