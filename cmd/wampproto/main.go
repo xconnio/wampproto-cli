@@ -158,13 +158,13 @@ func parseCmd(args []string) (*cmd, error) {
 		Cancel: &Cancel{
 			cancel:          cancelCommand,
 			cancelRequestID: cancelCommand.Arg("request-id", "The ID of request to cancel.").Required().Int64(),
-			cancelOptions:   cancelCommand.Flag("options", "Cancel options.").Short('o').StringMap(),
+			cancelOptions:   cancelCommand.Flag("option", "Cancel options.").Short('o').StringMap(),
 		},
 
 		Interrupt: &Interrupt{
 			interrupt:          interruptCommand,
 			interruptRequestID: interruptCommand.Arg("request-id", "The ID of request to interrupt.").Required().Int64(),
-			interruptOptions:   interruptCommand.Flag("options", "Interrupt options.").Short('o').StringMap(),
+			interruptOptions:   interruptCommand.Flag("option", "Interrupt options.").Short('o').StringMap(),
 		},
 
 		GoodBye: &GoodBye{
