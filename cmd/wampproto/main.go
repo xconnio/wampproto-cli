@@ -297,6 +297,16 @@ func parseCmd(args []string) (*cmd, error) {
 
 	parsedCommand, err := app.Parse(args[1:])
 	if err != nil {
+		if err.Error() == "must select a subcommand of 'message'" {
+			app.Usage([]string{"message"})
+			os.Exit(0)
+		}
+
+		if err.Error() == "must select a subcommand of 'auth'" {
+			app.Usage([]string{"auth"})
+			os.Exit(0)
+		}
+
 		return nil, err
 	}
 	c.parsedCommand = parsedCommand
