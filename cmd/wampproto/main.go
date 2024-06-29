@@ -29,6 +29,7 @@ type cmd struct {
 	message    *kingpin.CmdClause
 	serializer *string
 	*Hello
+	*Welcome
 	*Call
 	*Result
 	*Register
@@ -53,6 +54,7 @@ func parseCmd(args []string) (*cmd, error) {
 
 	messageCommand := app.Command("message", "Wampproto messages.")
 	helloCommand := messageCommand.Command("hello", "Hello message.")
+	welcomeCommand := messageCommand.Command("welcome", "Welcome message.")
 	callCommand := messageCommand.Command("call", "Call message.")
 	resultCommand := messageCommand.Command("result", "Result messages.")
 	registerCommand := messageCommand.Command("register", "Register message.")
@@ -99,6 +101,12 @@ func parseCmd(args []string) (*cmd, error) {
 			authID:    helloCommand.Flag("authid", "The authid.").Default("").String(),
 			authExtra: helloCommand.Flag("authextra", "Additional authentication data.").Short('e').StringMap(),
 			roles:     helloCommand.Flag("roles", "Client roles.").Short('r').StringMap(),
+		},
+
+		Welcome: &Welcome{
+			welcome:        welcomeCommand,
+			sessionID:      welcomeCommand.Arg("session-id", "WAMP session ID.").Required().Int64(),
+			welcomeDetails: welcomeCommand.Flag("details", "Welcome details.").Short('d').StringMap(),
 		},
 
 		Call: &Call{
@@ -265,6 +273,17 @@ func Run(args []string) (string, error) {
 		helloMessage := messages.NewHello(*c.realm, *c.authID, authExtra, roles, *c.authMethods)
 
 		return serializeMessageAndOutput(serializer, helloMessage, *c.output)
+
+	case c.welcome.FullCommand():
+		var (
+			details = wampprotocli.StringMapToTypedMap(*c.welcomeDetails)
+
+			serializer = wampprotocli.SerializerByName(*c.serializer)
+		)
+
+		welcomeMessage := messages.NewWelcome(*c.sessionID, details)
+
+		return serializeMessageAndOutput(serializer, welcomeMessage, *c.output)
 
 	case c.call.FullCommand():
 		var (

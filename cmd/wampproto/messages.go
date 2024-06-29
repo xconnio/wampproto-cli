@@ -13,6 +13,12 @@ type Hello struct {
 	roles       *map[string]string
 }
 
+type Welcome struct {
+	welcome        *kingpin.CmdClause
+	sessionID      *int64
+	welcomeDetails *map[string]string
+}
+
 type Call struct {
 	call          *kingpin.CmdClause
 	callRequestID *int64
