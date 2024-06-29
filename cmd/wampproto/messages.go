@@ -39,6 +39,16 @@ type Abort struct {
 	abortKwArgs  *map[string]string
 }
 
+type Error struct {
+	error          *kingpin.CmdClause
+	messageType    *int64
+	errorRequestID *int64
+	errorDetails   *map[string]string
+	errorUri       *string
+	errorArgs      *[]string
+	errorKwArgs    *map[string]string
+}
+
 type Call struct {
 	call          *kingpin.CmdClause
 	callRequestID *int64

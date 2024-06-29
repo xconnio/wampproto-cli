@@ -9,8 +9,8 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/xconnio/wampproto-cli"
-	"github.com/xconnio/wampproto-cli/cmd/wampproto"
+	wampprotocli "github.com/xconnio/wampproto-cli"
+	main "github.com/xconnio/wampproto-cli/cmd/wampproto"
 )
 
 func TestRunGenerateChallenge(t *testing.T) {
@@ -320,6 +320,21 @@ func TestAbortCommand(t *testing.T) {
 
 	t.Run("NoArgsKwargsDetails", func(t *testing.T) {
 		var cmd = "wampproto message abort noreason"
+		output, err := main.Run(strings.Split(cmd, " "))
+		require.NoError(t, err)
+
+		_, err = hex.DecodeString(output)
+		require.NoError(t, err)
+	})
+}
+
+func TestErrortCommand(t *testing.T) {
+	var command = "wampproto message error 1 1 wamp.error abc true -d abc:123 -k foo:bar"
+
+	testMessageCommand(t, command)
+
+	t.Run("NoArgsKwargsDetails", func(t *testing.T) {
+		var cmd = "wampproto message error 1 1 wamp.error"
 		output, err := main.Run(strings.Split(cmd, " "))
 		require.NoError(t, err)
 

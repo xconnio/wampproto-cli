@@ -8,7 +8,7 @@ import (
 
 	"github.com/alecthomas/kingpin/v2"
 
-	"github.com/xconnio/wampproto-cli"
+	wampprotocli "github.com/xconnio/wampproto-cli"
 	"github.com/xconnio/wampproto-go/auth"
 	"github.com/xconnio/wampproto-go/messages"
 	"github.com/xconnio/wampproto-go/serializers"
@@ -33,6 +33,7 @@ type cmd struct {
 	*Challenge
 	*Authenticate
 	*Abort
+	*Error
 	*Call
 	*Result
 	*Register
@@ -61,6 +62,7 @@ func parseCmd(args []string) (*cmd, error) {
 	challengeCommand := messageCommand.Command("challenge", "Challenge message.")
 	authenticateCommand := messageCommand.Command("authenticate", "Authenticate message.")
 	abortCommand := messageCommand.Command("abort", "Abort message.")
+	errorCommand := messageCommand.Command("error", "Error message.")
 	callCommand := messageCommand.Command("call", "Call message.")
 	resultCommand := messageCommand.Command("result", "Result messages.")
 	registerCommand := messageCommand.Command("register", "Register message.")
@@ -134,6 +136,17 @@ func parseCmd(args []string) (*cmd, error) {
 			abortDetails: abortCommand.Flag("details", "Additional abort data.").Short('d').StringMap(),
 			abortArgs:    abortCommand.Arg("args", "Arguments of abort").Strings(),
 			abortKwArgs:  abortCommand.Flag("kwargs", "Keyword arguments of abort").Short('k').StringMap(),
+		},
+
+		Error: &Error{
+			error:       errorCommand,
+			messageType: errorCommand.Arg("message-type", "The ID of message associated with the error.").Required().Int64(),
+			errorRequestID: errorCommand.Arg("request-id", "The ID of the request that resulted in the error").
+				Required().Int64(),
+			errorDetails: errorCommand.Flag("details", "Additional error data.").Short('d').StringMap(),
+			errorUri:     errorCommand.Arg("uri", "Error URI.").Required().String(),
+			errorArgs:    errorCommand.Arg("args", "Arguments of error.").Strings(),
+			errorKwArgs:  errorCommand.Flag("kwargs", "Keyword arguments of error.").Short('k').StringMap(),
 		},
 
 		Call: &Call{
@@ -346,6 +359,20 @@ func Run(args []string) (string, error) {
 		abortMessage := messages.NewAbort(abortDetails, *c.abortReason, abortArgs, abortKwargs)
 
 		return serializeMessageAndOutput(serializer, abortMessage, *c.output)
+
+	case c.error.FullCommand():
+		var (
+			errorDetails = wampprotocli.StringMapToTypedMap(*c.errorDetails)
+			errorArgs    = wampprotocli.StringsToTypedList(*c.errorArgs)
+			errorKwargs  = wampprotocli.StringMapToTypedMap(*c.errorKwArgs)
+
+			serializer = wampprotocli.SerializerByName(*c.serializer)
+		)
+
+		errorMessage := messages.NewError(*c.messageType, *c.errorRequestID, errorDetails, *c.errorUri, errorArgs,
+			errorKwargs)
+
+		return serializeMessageAndOutput(serializer, errorMessage, *c.output)
 
 	case c.call.FullCommand():
 		var (
