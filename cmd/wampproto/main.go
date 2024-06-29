@@ -69,6 +69,7 @@ func parseCmd(args []string) (*cmd, error) {
 
 	craCommand := authCommand.Command("cra", "Command for CRA authentication.")
 	generateCRAChallengeCommand := craCommand.Command("generate-challenge", "Generate a CRA challenge.")
+	deriveKeyCommand := craCommand.Command("derive-key", "Derive CRA Key.")
 
 	messageCommand := app.Command("message", "Wampproto messages.")
 	helloCommand := messageCommand.Command("hello", "Hello message.")
@@ -128,6 +129,12 @@ func parseCmd(args []string) (*cmd, error) {
 			craAuthID:            generateCRAChallengeCommand.Arg("authid", "Auth ID.").Required().String(),
 			craAuthRole:          generateCRAChallengeCommand.Arg("authrole", "Auth role.").Required().String(),
 			craProvider:          generateCRAChallengeCommand.Arg("provider", "Provider name.").Required().String(),
+
+			deriveKey: deriveKeyCommand,
+			salt:      deriveKeyCommand.Arg("salt", "Salt.").Required().String(),
+			secret:    deriveKeyCommand.Arg("secret", "Secret key.").Required().String(),
+			iteration: deriveKeyCommand.Flag("iteration", "Iteration count.").Short('i').Int(),
+			keylen:    deriveKeyCommand.Flag("keylen", "Key length.").Short('l').Int(),
 		},
 
 		message: messageCommand,
@@ -410,6 +417,11 @@ func Run(args []string) (string, error) {
 		}
 
 		return wampprotocli.FormatOutputBytes(*c.output, []byte(craChallenge))
+
+	case c.deriveKey.FullCommand():
+		derivedKey := auth.DeriveCRAKey(*c.salt, *c.secret, *c.iteration, *c.keylen)
+
+		return wampprotocli.FormatOutputBytes(*c.output, derivedKey)
 
 	case c.hello.FullCommand():
 		var (

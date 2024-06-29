@@ -29,4 +29,10 @@ type CRA struct {
 	craAuthID            *string
 	craAuthRole          *string
 	craProvider          *string
+
+	deriveKey *kingpin.CmdClause
+	salt      *string
+	secret    *string
+	iteration *int
+	keylen    *int
 }

@@ -234,6 +234,30 @@ func TestGenerateCRAChallenge(t *testing.T) {
 	})
 }
 
+func TestDeriveCRAKey(t *testing.T) {
+	t.Run("OutputHex", func(t *testing.T) {
+		var command = "wampproto auth cra derive-key foobar secret"
+
+		challenge, err := main.Run(strings.Split(command, " "))
+		require.NoError(t, err)
+
+		// validate that the output is a validate hex string
+		_, err = hex.DecodeString(challenge)
+		require.NoError(t, err)
+	})
+
+	t.Run("OutputBase64", func(t *testing.T) {
+		var command = "wampproto auth cra derive-key abc test --iteration 1000 --keylen 32 --output base64"
+
+		challenge, err := main.Run(strings.Split(command, " "))
+		require.NoError(t, err)
+
+		// validate that the output is a valid base64 string
+		_, err = base64.StdEncoding.DecodeString(challenge)
+		require.NoError(t, err)
+	})
+}
+
 func testMessageCommand(t *testing.T, command string) {
 	t.Run("OutputHex", func(t *testing.T) {
 		output, err := main.Run(strings.Split(command, " "))
