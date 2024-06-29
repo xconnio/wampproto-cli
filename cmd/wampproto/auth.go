@@ -20,3 +20,28 @@ type CryptoSign struct {
 	getPublicKey   *kingpin.CmdClause
 	privateKeyFlag *string
 }
+
+type CRA struct {
+	cra *kingpin.CmdClause
+
+	generateCRAChallenge *kingpin.CmdClause
+	craSessionID         *int64
+	craAuthID            *string
+	craAuthRole          *string
+	craProvider          *string
+
+	deriveKey *kingpin.CmdClause
+	salt      *string
+	secret    *string
+	iteration *int
+	keylen    *int
+
+	signCRAChallenge *kingpin.CmdClause
+	craChallenge     *string
+	craKey           *string
+
+	verifyCRASignature *kingpin.CmdClause
+	verifyCRAChallenge *string
+	verifyCRASign      *string
+	verifyCRAKey       *string
+}

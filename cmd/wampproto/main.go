@@ -25,6 +25,7 @@ type cmd struct {
 
 	auth *kingpin.CmdClause
 	*CryptoSign
+	*CRA
 
 	message    *kingpin.CmdClause
 	serializer *string
@@ -65,6 +66,12 @@ func parseCmd(args []string) (*cmd, error) {
 	verifySignatureCommand := cryptoSignCommand.Command("verify-signature", "Verify a cryptosign challenge.")
 	getPubKeyCommand := cryptoSignCommand.Command("get-pubkey",
 		"Retrieve the ed25519 public key associated with the provided private key.")
+
+	craCommand := authCommand.Command("cra", "Command for CRA authentication.")
+	generateCRAChallengeCommand := craCommand.Command("generate-challenge", "Generate a CRA challenge.")
+	deriveKeyCommand := craCommand.Command("derive-key", "Derive CRA Key.")
+	signCRAChallengeCommand := craCommand.Command("sign-challenge", "Sign a CRA challenge.")
+	verifyCRASignatureCommand := craCommand.Command("verify-signature", "Verify a CRA signature.")
 
 	messageCommand := app.Command("message", "Wampproto messages.")
 	helloCommand := messageCommand.Command("hello", "Hello message.")
@@ -114,6 +121,31 @@ func parseCmd(args []string) (*cmd, error) {
 			getPublicKey: getPubKeyCommand,
 			privateKeyFlag: getPubKeyCommand.Arg("private-key",
 				"The ed25519 private key to derive the corresponding public key.").Required().String(),
+		},
+
+		CRA: &CRA{
+			cra: craCommand,
+
+			generateCRAChallenge: generateCRAChallengeCommand,
+			craSessionID:         generateCRAChallengeCommand.Arg("session-id", "WAMP session ID.").Required().Int64(),
+			craAuthID:            generateCRAChallengeCommand.Arg("authid", "Auth ID.").Required().String(),
+			craAuthRole:          generateCRAChallengeCommand.Arg("authrole", "Auth role.").Required().String(),
+			craProvider:          generateCRAChallengeCommand.Arg("provider", "Provider name.").Required().String(),
+
+			deriveKey: deriveKeyCommand,
+			salt:      deriveKeyCommand.Arg("salt", "Salt.").Required().String(),
+			secret:    deriveKeyCommand.Arg("secret", "Secret key.").Required().String(),
+			iteration: deriveKeyCommand.Flag("iteration", "Iteration count.").Short('i').Int(),
+			keylen:    deriveKeyCommand.Flag("keylen", "Key length.").Short('l').Int(),
+
+			signCRAChallenge: signCRAChallengeCommand,
+			craChallenge:     signCRAChallengeCommand.Arg("challenge", "Challenge to sign.").Required().String(),
+			craKey:           signCRAChallengeCommand.Arg("key", "Key to sign CRA challenge.").Required().String(),
+
+			verifyCRASignature: verifyCRASignatureCommand,
+			verifyCRAChallenge: verifyCRASignatureCommand.Arg("challenge", "CRA challenge to verify.").Required().String(),
+			verifyCRASign:      verifyCRASignatureCommand.Arg("signature", "CRA signature to verify.").Required().String(),
+			verifyCRAKey:       verifyCRASignatureCommand.Arg("key", "Key to verify CRA Signature.").Required().String(),
 		},
 
 		message: messageCommand,
@@ -398,6 +430,40 @@ func Run(args []string) (string, error) {
 		publicKeyBytes := ed25519.NewKeyFromSeed(privateKeyBytes).Public().(ed25519.PublicKey)
 
 		return wampprotocli.FormatOutputBytes(*c.output, publicKeyBytes)
+
+	case c.generateCRAChallenge.FullCommand():
+		craChallenge, err := auth.GenerateCRAChallenge(*c.craSessionID, *c.craAuthID, *c.craAuthRole, *c.craProvider)
+		if err != nil {
+			return "", err
+		}
+
+		return wampprotocli.FormatOutputBytes(*c.output, []byte(craChallenge))
+
+	case c.deriveKey.FullCommand():
+		derivedKey := auth.DeriveCRAKey(*c.salt, *c.secret, *c.iteration, *c.keylen)
+
+		return wampprotocli.FormatOutputBytes(*c.output, derivedKey)
+
+	case c.signCRAChallenge.FullCommand():
+		craKey, err := wampprotocli.DecodeHexOrBase64(*c.craKey)
+		if err != nil {
+			return "", fmt.Errorf("invalid cra-key: %s", err.Error())
+		}
+
+		signedChallenge := auth.SignCRAChallenge(*c.craChallenge, craKey)
+
+		return wampprotocli.FormatOutputBytes(*c.output, []byte(signedChallenge))
+
+	case c.verifyCRASignature.FullCommand():
+		craKey, err := wampprotocli.DecodeHexOrBase64(*c.verifyCRAKey)
+		if err != nil {
+			return "", fmt.Errorf("invalid cra-key: %s", err.Error())
+		}
+
+		isVerified := auth.VerifyCRASignature(*c.verifyCRASign, *c.verifyCRAChallenge, craKey)
+		if !isVerified {
+			return "", fmt.Errorf("signature verification failed")
+		}
 
 	case c.hello.FullCommand():
 		var (
