@@ -344,7 +344,7 @@ func TestErrorMessage(t *testing.T) {
 }
 
 func TestCancelMessage(t *testing.T) {
-	var command = "wampproto message cancel 1 --options abc:123 -o foo:bar"
+	var command = "wampproto message cancel 1 --option abc:123 -o foo:bar"
 
 	testMessageCommand(t, command)
 
@@ -359,7 +359,7 @@ func TestCancelMessage(t *testing.T) {
 }
 
 func TestInterruptMessage(t *testing.T) {
-	var command = "wampproto message interrupt 1 --options abc:123 -o foo:bar"
+	var command = "wampproto message interrupt 1 --option abc:123 -o foo:bar"
 
 	testMessageCommand(t, command)
 
@@ -374,7 +374,7 @@ func TestInterruptMessage(t *testing.T) {
 }
 
 func TestGoodByeMessage(t *testing.T) {
-	var command = "wampproto message goodbye unknown --details abc:123 -d foo:bar"
+	var command = "wampproto message goodbye unknown --detail abc:123 -d foo:bar"
 
 	testMessageCommand(t, command)
 
@@ -409,7 +409,7 @@ func TestResultMessage(t *testing.T) {
 	testMessageCommand(t, command)
 
 	t.Run("WithArgsKwargsDetails", func(t *testing.T) {
-		var cmd = command + " abc def --details abc=def -k key:value abc=123"
+		var cmd = command + " abc def --detail abc=def -k key:value abc=123"
 		output, err := main.Run(strings.Split(cmd, " "))
 		require.NoError(t, err)
 
@@ -445,7 +445,7 @@ func TestInvocationMessage(t *testing.T) {
 	testMessageCommand(t, command)
 
 	t.Run("WithArgsKwargsDetails", func(t *testing.T) {
-		var cmd = command + " abc def --details abc=def -k key:value abc=123"
+		var cmd = command + " abc def --detail abc=def -k key:value abc=123"
 		output, err := main.Run(strings.Split(cmd, " "))
 		require.NoError(t, err)
 

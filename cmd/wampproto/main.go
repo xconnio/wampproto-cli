@@ -141,7 +141,7 @@ func parseCmd(args []string) (*cmd, error) {
 			abortReason:  abortCommand.Arg("reason", "Reason to abort.").Required().String(),
 			abortDetails: abortCommand.Flag("detail", "Additional abort data.").Short('d').StringMap(),
 			abortArgs:    abortCommand.Arg("args", "Arguments of abort").Strings(),
-			abortKwArgs:  abortCommand.Flag("kwargs", "Keyword arguments of abort").Short('k').StringMap(),
+			abortKwArgs:  abortCommand.Flag("kwarg", "Keyword arguments of abort").Short('k').StringMap(),
 		},
 
 		Error: &Error{
@@ -152,7 +152,7 @@ func parseCmd(args []string) (*cmd, error) {
 			errorDetails: errorCommand.Flag("detail", "Additional error data.").Short('d').StringMap(),
 			errorUri:     errorCommand.Arg("uri", "Error URI.").Required().String(),
 			errorArgs:    errorCommand.Arg("args", "Arguments of error.").Strings(),
-			errorKwArgs:  errorCommand.Flag("kwargs", "Keyword arguments of error.").Short('k').StringMap(),
+			errorKwArgs:  errorCommand.Flag("kwarg", "Keyword arguments of error.").Short('k').StringMap(),
 		},
 
 		Cancel: &Cancel{
@@ -178,7 +178,7 @@ func parseCmd(args []string) (*cmd, error) {
 			callRequestID: callCommand.Arg("request-id", "Call request ID.").Required().Int64(),
 			callURI:       callCommand.Arg("procedure", "Procedure to call.").Required().String(),
 			callArgs:      callCommand.Arg("args", "Arguments for the call.").Strings(),
-			callKwargs:    callCommand.Flag("kwargs", "Keyword argument for the call.").Short('k').StringMap(),
+			callKwargs:    callCommand.Flag("kwarg", "Keyword argument for the call.").Short('k').StringMap(),
 			callOption:    callCommand.Flag("option", "Call options.").Short('o').StringMap(),
 		},
 
@@ -187,7 +187,7 @@ func parseCmd(args []string) (*cmd, error) {
 			resultRequestID: resultCommand.Arg("request-id", "Result request ID.").Required().Int64(),
 			resultDetails:   resultCommand.Flag("detail", "Result details.").Short('d').StringMap(),
 			resultArgs:      resultCommand.Arg("args", "Result Arguments").Strings(),
-			resultKwargs:    resultCommand.Flag("kwargs", "Result KW Arguments.").Short('k').StringMap(),
+			resultKwargs:    resultCommand.Flag("kwarg", "Result KW Arguments.").Short('k').StringMap(),
 		},
 
 		Register: &Register{
@@ -209,7 +209,7 @@ func parseCmd(args []string) (*cmd, error) {
 			invRegistrationID: invocationCommand.Arg("registration-id", "Invocation registration ID.").Required().Int64(),
 			invDetails:        invocationCommand.Flag("detail", "Invocation details.").Short('d').StringMap(),
 			invArgs:           invocationCommand.Arg("args", "Invocation arguments.").Strings(),
-			invKwArgs:         invocationCommand.Flag("kwargs", "Invocation KW arguments.").Short('k').StringMap(),
+			invKwArgs:         invocationCommand.Flag("kwarg", "Invocation KW arguments.").Short('k').StringMap(),
 		},
 
 		Yield: &Yield{
@@ -217,7 +217,7 @@ func parseCmd(args []string) (*cmd, error) {
 			yieldRequestID: yieldCommand.Arg("request-id", "Yield request ID.").Required().Int64(),
 			yieldOptions:   yieldCommand.Flag("option", "Yield options.").Short('o').StringMap(),
 			yieldArgs:      yieldCommand.Arg("args", "Yield arguments.").Strings(),
-			yieldKwArgs:    yieldCommand.Flag("kwargs", "Yield KW arguments.").Short('k').StringMap(),
+			yieldKwArgs:    yieldCommand.Flag("kwarg", "Yield KW arguments.").Short('k').StringMap(),
 		},
 
 		UnRegister: &UnRegister{
