@@ -358,6 +358,21 @@ func TestCancelMessage(t *testing.T) {
 	})
 }
 
+func TestInterruptMessage(t *testing.T) {
+	var command = "wampproto message interrupt 1 --options abc:123 -o foo:bar"
+
+	testMessageCommand(t, command)
+
+	t.Run("NoOptions", func(t *testing.T) {
+		var cmd = "wampproto message interrupt 1"
+		output, err := main.Run(strings.Split(cmd, " "))
+		require.NoError(t, err)
+
+		_, err = hex.DecodeString(output)
+		require.NoError(t, err)
+	})
+}
+
 func TestCallMessage(t *testing.T) {
 	var command = "wampproto message call 1 io.xconn.test abc -k key:value abc=123"
 

@@ -55,6 +55,12 @@ type Cancel struct {
 	cancelOptions   *map[string]string
 }
 
+type Interrupt struct {
+	interrupt          *kingpin.CmdClause
+	interruptRequestID *int64
+	interruptOptions   *map[string]string
+}
+
 type Call struct {
 	call          *kingpin.CmdClause
 	callRequestID *int64

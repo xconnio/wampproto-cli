@@ -34,6 +34,7 @@ type cmd struct {
 	*Authenticate
 	*Abort
 	*Error
+	*Interrupt
 	*Cancel
 	*Call
 	*Result
@@ -65,6 +66,7 @@ func parseCmd(args []string) (*cmd, error) {
 	abortCommand := messageCommand.Command("abort", "Abort message.")
 	errorCommand := messageCommand.Command("error", "Error message.")
 	cancelCommand := messageCommand.Command("cancel", "Cancel message.")
+	interruptCommand := messageCommand.Command("interrupt", "Interrupt message.")
 	callCommand := messageCommand.Command("call", "Call message.")
 	resultCommand := messageCommand.Command("result", "Result messages.")
 	registerCommand := messageCommand.Command("register", "Register message.")
@@ -155,6 +157,12 @@ func parseCmd(args []string) (*cmd, error) {
 			cancel:          cancelCommand,
 			cancelRequestID: cancelCommand.Arg("request-id", "The ID of request to cancel.").Required().Int64(),
 			cancelOptions:   cancelCommand.Flag("options", "Cancel options.").Short('o').StringMap(),
+		},
+
+		Interrupt: &Interrupt{
+			interrupt:          interruptCommand,
+			interruptRequestID: interruptCommand.Arg("request-id", "The ID of request to interrupt.").Required().Int64(),
+			interruptOptions:   interruptCommand.Flag("options", "Interrupt options.").Short('o').StringMap(),
 		},
 
 		Call: &Call{
@@ -392,6 +400,17 @@ func Run(args []string) (string, error) {
 		cancelMessage := messages.NewCancel(*c.sessionID, cancelOptions)
 
 		return serializeMessageAndOutput(serializer, cancelMessage, *c.output)
+
+	case c.interrupt.FullCommand():
+		var (
+			interruptOptions = wampprotocli.StringMapToTypedMap(*c.interruptOptions)
+
+			serializer = wampprotocli.SerializerByName(*c.serializer)
+		)
+
+		interruptMessage := messages.NewInterrupt(*c.sessionID, interruptOptions)
+
+		return serializeMessageAndOutput(serializer, interruptMessage, *c.output)
 
 	case c.call.FullCommand():
 		var (
