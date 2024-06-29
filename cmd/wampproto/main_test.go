@@ -359,3 +359,9 @@ func TestSubscribeMessage(t *testing.T) {
 		require.NoError(t, err)
 	})
 }
+
+func TestSubscribedMessage(t *testing.T) {
+	var command = "wampproto message subscribed 1 1"
+
+	testMessageCommand(t, command)
+}

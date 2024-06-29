@@ -68,3 +68,9 @@ type Subscribe struct {
 	subscribeTopic     *string
 	subscribeOptions   *map[string]string
 }
+
+type Subscribed struct {
+	subscribed          *kingpin.CmdClause
+	subscribedRequestID *int64
+	subscriptionID      *int64
+}
