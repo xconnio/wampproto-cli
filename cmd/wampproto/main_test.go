@@ -298,7 +298,7 @@ func TestChallengeMessage(t *testing.T) {
 	})
 }
 
-func TestAuthenticateCommand(t *testing.T) {
+func TestAuthenticateMessage(t *testing.T) {
 	var command = "wampproto message authenticate abc -e abc:123 -e foo:bar"
 
 	testMessageCommand(t, command)
@@ -313,7 +313,7 @@ func TestAuthenticateCommand(t *testing.T) {
 	})
 }
 
-func TestAbortCommand(t *testing.T) {
+func TestAbortMessage(t *testing.T) {
 	var command = "wampproto message abort noreason abc 123 true -d abc:123 -k foo:bar"
 
 	testMessageCommand(t, command)
@@ -328,13 +328,28 @@ func TestAbortCommand(t *testing.T) {
 	})
 }
 
-func TestErrortCommand(t *testing.T) {
+func TestErrorMessage(t *testing.T) {
 	var command = "wampproto message error 1 1 wamp.error abc true -d abc:123 -k foo:bar"
 
 	testMessageCommand(t, command)
 
 	t.Run("NoArgsKwargsDetails", func(t *testing.T) {
 		var cmd = "wampproto message error 1 1 wamp.error"
+		output, err := main.Run(strings.Split(cmd, " "))
+		require.NoError(t, err)
+
+		_, err = hex.DecodeString(output)
+		require.NoError(t, err)
+	})
+}
+
+func TestCancelMessage(t *testing.T) {
+	var command = "wampproto message cancel 1 --options abc:123 -o foo:bar"
+
+	testMessageCommand(t, command)
+
+	t.Run("NoOptions", func(t *testing.T) {
+		var cmd = "wampproto message cancel 1"
 		output, err := main.Run(strings.Split(cmd, " "))
 		require.NoError(t, err)
 

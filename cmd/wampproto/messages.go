@@ -49,6 +49,12 @@ type Error struct {
 	errorKwArgs    *map[string]string
 }
 
+type Cancel struct {
+	cancel          *kingpin.CmdClause
+	cancelRequestID *int64
+	cancelOptions   *map[string]string
+}
+
 type Call struct {
 	call          *kingpin.CmdClause
 	callRequestID *int64
