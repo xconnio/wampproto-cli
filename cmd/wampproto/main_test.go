@@ -373,6 +373,21 @@ func TestInterruptMessage(t *testing.T) {
 	})
 }
 
+func TestGoodByeMessage(t *testing.T) {
+	var command = "wampproto message goodbye unknown --details abc:123 -d foo:bar"
+
+	testMessageCommand(t, command)
+
+	t.Run("NoDetails", func(t *testing.T) {
+		var cmd = "wampproto message goodbye unknown"
+		output, err := main.Run(strings.Split(cmd, " "))
+		require.NoError(t, err)
+
+		_, err = hex.DecodeString(output)
+		require.NoError(t, err)
+	})
+}
+
 func TestCallMessage(t *testing.T) {
 	var command = "wampproto message call 1 io.xconn.test abc -k key:value abc=123"
 

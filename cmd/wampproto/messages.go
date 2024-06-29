@@ -61,6 +61,12 @@ type Interrupt struct {
 	interruptOptions   *map[string]string
 }
 
+type GoodBye struct {
+	goodBye        *kingpin.CmdClause
+	goodByeReason  *string
+	goodByeDetails *map[string]string
+}
+
 type Call struct {
 	call          *kingpin.CmdClause
 	callRequestID *int64
