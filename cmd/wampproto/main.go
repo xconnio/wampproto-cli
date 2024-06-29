@@ -120,7 +120,7 @@ func parseCmd(args []string) (*cmd, error) {
 		Welcome: &Welcome{
 			welcome:        welcomeCommand,
 			sessionID:      welcomeCommand.Arg("session-id", "WAMP session ID.").Required().Int64(),
-			welcomeDetails: welcomeCommand.Flag("details", "Welcome details.").Short('d').StringMap(),
+			welcomeDetails: welcomeCommand.Flag("detail", "Welcome details.").Short('d').StringMap(),
 		},
 
 		Challenge: &Challenge{
@@ -139,7 +139,7 @@ func parseCmd(args []string) (*cmd, error) {
 		Abort: &Abort{
 			abort:        abortCommand,
 			abortReason:  abortCommand.Arg("reason", "Reason to abort.").Required().String(),
-			abortDetails: abortCommand.Flag("details", "Additional abort data.").Short('d').StringMap(),
+			abortDetails: abortCommand.Flag("detail", "Additional abort data.").Short('d').StringMap(),
 			abortArgs:    abortCommand.Arg("args", "Arguments of abort").Strings(),
 			abortKwArgs:  abortCommand.Flag("kwargs", "Keyword arguments of abort").Short('k').StringMap(),
 		},
@@ -149,7 +149,7 @@ func parseCmd(args []string) (*cmd, error) {
 			messageType: errorCommand.Arg("message-type", "The ID of message associated with the error.").Required().Int64(),
 			errorRequestID: errorCommand.Arg("request-id", "The ID of the request that resulted in the error").
 				Required().Int64(),
-			errorDetails: errorCommand.Flag("details", "Additional error data.").Short('d').StringMap(),
+			errorDetails: errorCommand.Flag("detail", "Additional error data.").Short('d').StringMap(),
 			errorUri:     errorCommand.Arg("uri", "Error URI.").Required().String(),
 			errorArgs:    errorCommand.Arg("args", "Arguments of error.").Strings(),
 			errorKwArgs:  errorCommand.Flag("kwargs", "Keyword arguments of error.").Short('k').StringMap(),
@@ -170,7 +170,7 @@ func parseCmd(args []string) (*cmd, error) {
 		GoodBye: &GoodBye{
 			goodBye:        goodByeCommand,
 			goodByeReason:  goodByeCommand.Arg("reason", "GoodBye reason.").Required().String(),
-			goodByeDetails: goodByeCommand.Flag("details", "GoodBye details.").Short('d').StringMap(),
+			goodByeDetails: goodByeCommand.Flag("detail", "GoodBye details.").Short('d').StringMap(),
 		},
 
 		Call: &Call{
@@ -185,7 +185,7 @@ func parseCmd(args []string) (*cmd, error) {
 		Result: &Result{
 			result:          resultCommand,
 			resultRequestID: resultCommand.Arg("request-id", "Result request ID.").Required().Int64(),
-			resultDetails:   resultCommand.Flag("details", "Result details.").Short('d').StringMap(),
+			resultDetails:   resultCommand.Flag("detail", "Result details.").Short('d').StringMap(),
 			resultArgs:      resultCommand.Arg("args", "Result Arguments").Strings(),
 			resultKwargs:    resultCommand.Flag("kwargs", "Result KW Arguments.").Short('k').StringMap(),
 		},
@@ -207,7 +207,7 @@ func parseCmd(args []string) (*cmd, error) {
 			invocation:        invocationCommand,
 			invRequestID:      invocationCommand.Arg("request-id", "Invocation request ID.").Required().Int64(),
 			invRegistrationID: invocationCommand.Arg("registration-id", "Invocation registration ID.").Required().Int64(),
-			invDetails:        invocationCommand.Flag("details", "Invocation details.").Short('d').StringMap(),
+			invDetails:        invocationCommand.Flag("detail", "Invocation details.").Short('d').StringMap(),
 			invArgs:           invocationCommand.Arg("args", "Invocation arguments.").Strings(),
 			invKwArgs:         invocationCommand.Flag("kwargs", "Invocation KW arguments.").Short('k').StringMap(),
 		},
