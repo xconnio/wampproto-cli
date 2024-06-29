@@ -8,4 +8,9 @@ const (
 	CborSerializer     = "cbor"
 	MsgpackSerializer  = "msgpack"
 	ProtobufSerializer = "protobuf"
+
+	Anonymous  = "anonymous"
+	Ticket     = "ticket"
+	WAMPCra    = "wampcra"
+	CryptoSign = "cryptosign"
 )

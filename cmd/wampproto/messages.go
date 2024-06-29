@@ -4,6 +4,15 @@ import (
 	"github.com/alecthomas/kingpin/v2"
 )
 
+type Hello struct {
+	hello       *kingpin.CmdClause
+	realm       *string
+	authID      *string
+	authMethods *[]string
+	authExtra   *map[string]string
+	roles       *map[string]string
+}
+
 type Call struct {
 	call          *kingpin.CmdClause
 	callRequestID *int64

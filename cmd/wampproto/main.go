@@ -28,6 +28,7 @@ type cmd struct {
 
 	message    *kingpin.CmdClause
 	serializer *string
+	*Hello
 	*Call
 	*Result
 	*Register
@@ -51,6 +52,7 @@ func parseCmd(args []string) (*cmd, error) {
 		"Retrieve the ed25519 public key associated with the provided private key.")
 
 	messageCommand := app.Command("message", "Wampproto messages.")
+	helloCommand := messageCommand.Command("hello", "Hello message.")
 	callCommand := messageCommand.Command("call", "Call message.")
 	resultCommand := messageCommand.Command("result", "Result messages.")
 	registerCommand := messageCommand.Command("register", "Register message.")
@@ -88,6 +90,16 @@ func parseCmd(args []string) (*cmd, error) {
 		serializer: messageCommand.Flag("serializer", "Serializer to use.").Default(wampprotocli.JsonSerializer).
 			Enum(wampprotocli.JsonSerializer, wampprotocli.CborSerializer, wampprotocli.MsgpackSerializer,
 				wampprotocli.ProtobufSerializer),
+
+		Hello: &Hello{
+			hello: helloCommand,
+			realm: helloCommand.Arg("realm", "The WAMP realm.").Required().String(),
+			authMethods: helloCommand.Arg("authmethods", "The authentication methods").Default(wampprotocli.Anonymous).
+				Enums(wampprotocli.Anonymous, wampprotocli.Ticket, wampprotocli.WAMPCra, wampprotocli.CryptoSign),
+			authID:    helloCommand.Flag("authid", "The authid.").Default("").String(),
+			authExtra: helloCommand.Flag("authextra", "Additional authentication data.").Short('e').StringMap(),
+			roles:     helloCommand.Flag("roles", "Client roles.").Short('r').StringMap(),
+		},
 
 		Call: &Call{
 			call:          callCommand,
@@ -241,6 +253,18 @@ func Run(args []string) (string, error) {
 		publicKeyBytes := ed25519.NewKeyFromSeed(privateKeyBytes).Public().(ed25519.PublicKey)
 
 		return wampprotocli.FormatOutputBytes(*c.output, publicKeyBytes)
+
+	case c.hello.FullCommand():
+		var (
+			authExtra = wampprotocli.StringMapToTypedMap(*c.authExtra)
+			roles     = wampprotocli.StringMapToTypedMap(*c.roles)
+
+			serializer = wampprotocli.SerializerByName(*c.serializer)
+		)
+
+		helloMessage := messages.NewHello(*c.realm, *c.authID, authExtra, roles, *c.authMethods)
+
+		return serializeMessageAndOutput(serializer, helloMessage, *c.output)
 
 	case c.call.FullCommand():
 		var (

@@ -252,6 +252,22 @@ func testMessageCommand(t *testing.T, command string) {
 	})
 }
 
+func TestHelloMessage(t *testing.T) {
+	var command = "wampproto message hello realm1 anonymous ticket wampcra --authid 1 -e abc:xyz --authextra foo:bar " +
+		"--roles caller:true -r callee:false"
+
+	testMessageCommand(t, command)
+
+	t.Run("NoAuthExtraNoRoles", func(t *testing.T) {
+		var cmd = "wampproto message hello realm1 anonymous ticket wampcra"
+		output, err := main.Run(strings.Split(cmd, " "))
+		require.NoError(t, err)
+
+		_, err = hex.DecodeString(output)
+		require.NoError(t, err)
+	})
+}
+
 func TestCallMessage(t *testing.T) {
 	var command = "wampproto message call 1 io.xconn.test abc -k key:value abc=123"
 
