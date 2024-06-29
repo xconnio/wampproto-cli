@@ -313,6 +313,21 @@ func TestAuthenticateCommand(t *testing.T) {
 	})
 }
 
+func TestAbortCommand(t *testing.T) {
+	var command = "wampproto message abort noreason abc 123 true -d abc:123 -k foo:bar"
+
+	testMessageCommand(t, command)
+
+	t.Run("NoArgsKwargsDetails", func(t *testing.T) {
+		var cmd = "wampproto message abort noreason"
+		output, err := main.Run(strings.Split(cmd, " "))
+		require.NoError(t, err)
+
+		_, err = hex.DecodeString(output)
+		require.NoError(t, err)
+	})
+}
+
 func TestCallMessage(t *testing.T) {
 	var command = "wampproto message call 1 io.xconn.test abc -k key:value abc=123"
 

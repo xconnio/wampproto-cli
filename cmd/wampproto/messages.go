@@ -31,6 +31,14 @@ type Authenticate struct {
 	authenticateExtra *map[string]string
 }
 
+type Abort struct {
+	abort        *kingpin.CmdClause
+	abortDetails *map[string]string
+	abortReason  *string
+	abortArgs    *[]string
+	abortKwArgs  *map[string]string
+}
+
 type Call struct {
 	call          *kingpin.CmdClause
 	callRequestID *int64

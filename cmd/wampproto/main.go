@@ -32,6 +32,7 @@ type cmd struct {
 	*Welcome
 	*Challenge
 	*Authenticate
+	*Abort
 	*Call
 	*Result
 	*Register
@@ -59,6 +60,7 @@ func parseCmd(args []string) (*cmd, error) {
 	welcomeCommand := messageCommand.Command("welcome", "Welcome message.")
 	challengeCommand := messageCommand.Command("challenge", "Challenge message.")
 	authenticateCommand := messageCommand.Command("authenticate", "Authenticate message.")
+	abortCommand := messageCommand.Command("abort", "Abort message.")
 	callCommand := messageCommand.Command("call", "Call message.")
 	resultCommand := messageCommand.Command("result", "Result messages.")
 	registerCommand := messageCommand.Command("register", "Register message.")
@@ -124,6 +126,14 @@ func parseCmd(args []string) (*cmd, error) {
 			authenticate:      authenticateCommand,
 			signature:         authenticateCommand.Arg("signature", "Signature to authenticate.").Required().String(),
 			authenticateExtra: authenticateCommand.Flag("extra", "Additional authentication data.").Short('e').StringMap(),
+		},
+
+		Abort: &Abort{
+			abort:        abortCommand,
+			abortReason:  abortCommand.Arg("reason", "Reason to abort.").Required().String(),
+			abortDetails: abortCommand.Flag("details", "Additional abort data.").Short('d').StringMap(),
+			abortArgs:    abortCommand.Arg("args", "Arguments of abort").Strings(),
+			abortKwArgs:  abortCommand.Flag("kwargs", "Keyword arguments of abort").Short('k').StringMap(),
 		},
 
 		Call: &Call{
@@ -323,6 +333,19 @@ func Run(args []string) (string, error) {
 		authenticateMessage := messages.NewAuthenticate(*c.signature, authenticateExtra)
 
 		return serializeMessageAndOutput(serializer, authenticateMessage, *c.output)
+
+	case c.abort.FullCommand():
+		var (
+			abortDetails = wampprotocli.StringMapToTypedMap(*c.abortDetails)
+			abortArgs    = wampprotocli.StringsToTypedList(*c.abortArgs)
+			abortKwargs  = wampprotocli.StringMapToTypedMap(*c.abortKwArgs)
+
+			serializer = wampprotocli.SerializerByName(*c.serializer)
+		)
+
+		abortMessage := messages.NewAbort(abortDetails, *c.abortReason, abortArgs, abortKwargs)
+
+		return serializeMessageAndOutput(serializer, abortMessage, *c.output)
 
 	case c.call.FullCommand():
 		var (
