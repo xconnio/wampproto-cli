@@ -38,6 +38,7 @@ type cmd struct {
 	*UnRegistered
 	*Subscribe
 	*Subscribed
+	*Publish
 }
 
 func parseCmd(args []string) (*cmd, error) {
@@ -63,6 +64,7 @@ func parseCmd(args []string) (*cmd, error) {
 	UnRegisteredCommand := messageCommand.Command("unregistered", "Unregistered message.")
 	subscribeCommand := messageCommand.Command("subscribe", "Subscribe message.")
 	subscribedCommand := messageCommand.Command("subscribed", "Subscribed message.")
+	publishCommand := messageCommand.Command("publish", "Publish message.")
 	c := &cmd{
 		output: app.Flag("output", "Format of the output.").Default("hex").
 			Enum(wampprotocli.HexFormat, wampprotocli.Base64Format),
@@ -162,6 +164,15 @@ func parseCmd(args []string) (*cmd, error) {
 			subscribed:          subscribedCommand,
 			subscribedRequestID: subscribedCommand.Arg("request-id", "Subscribed request ID.").Required().Int64(),
 			subscriptionID:      subscribedCommand.Arg("subscription-id", "Subscription ID.").Required().Int64(),
+		},
+
+		Publish: &Publish{
+			publish:          publishCommand,
+			publishRequestID: publishCommand.Arg("request-id", "Publish request ID.").Required().Int64(),
+			publishTopic:     publishCommand.Arg("topic", "Publish topic.").Required().String(),
+			publishOptions:   publishCommand.Flag("option", "Publish options.").Short('o').StringMap(),
+			publishArgs:      publishCommand.Arg("args", "Publish arguments.").Strings(),
+			publishKwArgs:    publishCommand.Flag("kwargs", "Publish Keyword arguments.").Short('k').StringMap(),
 		},
 	}
 
@@ -367,6 +378,20 @@ func Run(args []string) (string, error) {
 		subscribedMessage := messages.NewSubscribed(*c.subscribedRequestID, *c.subscriptionID)
 
 		return serializeMessageAndOutput(serializer, subscribedMessage, *c.output)
+
+	case c.publish.FullCommand():
+		var (
+			publishOptions = wampprotocli.StringMapToTypedMap(*c.publishOptions)
+			publishArgs    = wampprotocli.StringsToTypedList(*c.publishArgs)
+			publishKwargs  = wampprotocli.StringMapToTypedMap(*c.publishKwArgs)
+
+			serializer = wampprotocli.SerializerByName(*c.serializer)
+		)
+
+		publishMessage := messages.NewPublish(*c.publishRequestID, publishOptions, *c.publishTopic, publishArgs,
+			publishKwargs)
+
+		return serializeMessageAndOutput(serializer, publishMessage, *c.output)
 
 	}
 

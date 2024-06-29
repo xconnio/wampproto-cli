@@ -74,3 +74,12 @@ type Subscribed struct {
 	subscribedRequestID *int64
 	subscriptionID      *int64
 }
+
+type Publish struct {
+	publish          *kingpin.CmdClause
+	publishRequestID *int64
+	publishTopic     *string
+	publishOptions   *map[string]string
+	publishArgs      *[]string
+	publishKwArgs    *map[string]string
+}

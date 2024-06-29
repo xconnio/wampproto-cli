@@ -365,3 +365,18 @@ func TestSubscribedMessage(t *testing.T) {
 
 	testMessageCommand(t, command)
 }
+
+func TestPublishMessage(t *testing.T) {
+	var command = "wampproto message publish 1 1"
+
+	testMessageCommand(t, command)
+
+	t.Run("WithArgsKwargsOptions", func(t *testing.T) {
+		var cmd = command + " abc def -o abc=def -k key:value abc=123"
+		output, err := main.Run(strings.Split(cmd, " "))
+		require.NoError(t, err)
+
+		_, err = hex.DecodeString(output)
+		require.NoError(t, err)
+	})
+}
