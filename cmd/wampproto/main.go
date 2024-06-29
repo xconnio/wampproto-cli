@@ -71,6 +71,7 @@ func parseCmd(args []string) (*cmd, error) {
 	generateCRAChallengeCommand := craCommand.Command("generate-challenge", "Generate a CRA challenge.")
 	deriveKeyCommand := craCommand.Command("derive-key", "Derive CRA Key.")
 	signCRAChallengeCommand := craCommand.Command("sign-challenge", "Sign a CRA challenge.")
+	verifyCRASignatureCommand := craCommand.Command("verify-signature", "Verify a CRA signature.")
 
 	messageCommand := app.Command("message", "Wampproto messages.")
 	helloCommand := messageCommand.Command("hello", "Hello message.")
@@ -140,6 +141,11 @@ func parseCmd(args []string) (*cmd, error) {
 			signCRAChallenge: signCRAChallengeCommand,
 			craChallenge:     signCRAChallengeCommand.Arg("challenge", "Challenge to sign.").Required().String(),
 			craKey:           signCRAChallengeCommand.Arg("key", "Key to sign CRA challenge.").Required().String(),
+
+			verifyCRASignature: verifyCRASignatureCommand,
+			verifyCRAChallenge: verifyCRASignatureCommand.Arg("challenge", "CRA challenge to verify.").Required().String(),
+			verifyCRASign:      verifyCRASignatureCommand.Arg("signature", "CRA signature to verify.").Required().String(),
+			verifyCRAKey:       verifyCRASignatureCommand.Arg("key", "Key to verify CRA Signature.").Required().String(),
 		},
 
 		message: messageCommand,
@@ -437,6 +443,17 @@ func Run(args []string) (string, error) {
 		signedChallenge := auth.SignCRAChallenge(*c.craChallenge, craKey)
 
 		return wampprotocli.FormatOutputBytes(*c.output, []byte(signedChallenge))
+
+	case c.verifyCRASignature.FullCommand():
+		craKey, err := wampprotocli.DecodeHexOrBase64(*c.verifyCRAKey)
+		if err != nil {
+			return "", fmt.Errorf("invalid cra-key: %s", err.Error())
+		}
+
+		isVerified := auth.VerifyCRASignature(*c.verifyCRASign, *c.verifyCRAChallenge, craKey)
+		if !isVerified {
+			return "", fmt.Errorf("signature verification failed")
+		}
 
 	case c.hello.FullCommand():
 		var (

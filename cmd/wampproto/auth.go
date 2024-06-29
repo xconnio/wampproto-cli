@@ -39,4 +39,9 @@ type CRA struct {
 	signCRAChallenge *kingpin.CmdClause
 	craChallenge     *string
 	craKey           *string
+
+	verifyCRASignature *kingpin.CmdClause
+	verifyCRAChallenge *string
+	verifyCRASign      *string
+	verifyCRAKey       *string
 }
