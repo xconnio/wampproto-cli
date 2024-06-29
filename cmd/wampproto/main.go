@@ -25,6 +25,7 @@ type cmd struct {
 
 	auth *kingpin.CmdClause
 	*CryptoSign
+	*CRA
 
 	message    *kingpin.CmdClause
 	serializer *string
@@ -65,6 +66,9 @@ func parseCmd(args []string) (*cmd, error) {
 	verifySignatureCommand := cryptoSignCommand.Command("verify-signature", "Verify a cryptosign challenge.")
 	getPubKeyCommand := cryptoSignCommand.Command("get-pubkey",
 		"Retrieve the ed25519 public key associated with the provided private key.")
+
+	craCommand := authCommand.Command("cra", "Command for CRA authentication.")
+	generateCRAChallengeCommand := craCommand.Command("generate-challenge", "Generate a CRA challenge.")
 
 	messageCommand := app.Command("message", "Wampproto messages.")
 	helloCommand := messageCommand.Command("hello", "Hello message.")
@@ -114,6 +118,16 @@ func parseCmd(args []string) (*cmd, error) {
 			getPublicKey: getPubKeyCommand,
 			privateKeyFlag: getPubKeyCommand.Arg("private-key",
 				"The ed25519 private key to derive the corresponding public key.").Required().String(),
+		},
+
+		CRA: &CRA{
+			cra: craCommand,
+
+			generateCRAChallenge: generateCRAChallengeCommand,
+			craSessionID:         generateCRAChallengeCommand.Arg("session-id", "WAMP session ID.").Required().Int64(),
+			craAuthID:            generateCRAChallengeCommand.Arg("authid", "Auth ID.").Required().String(),
+			craAuthRole:          generateCRAChallengeCommand.Arg("authrole", "Auth role.").Required().String(),
+			craProvider:          generateCRAChallengeCommand.Arg("provider", "Provider name.").Required().String(),
 		},
 
 		message: messageCommand,
@@ -388,6 +402,14 @@ func Run(args []string) (string, error) {
 		publicKeyBytes := ed25519.NewKeyFromSeed(privateKeyBytes).Public().(ed25519.PublicKey)
 
 		return wampprotocli.FormatOutputBytes(*c.output, publicKeyBytes)
+
+	case c.generateCRAChallenge.FullCommand():
+		craChallenge, err := auth.GenerateCRAChallenge(*c.craSessionID, *c.craAuthID, *c.craAuthRole, *c.craProvider)
+		if err != nil {
+			return "", err
+		}
+
+		return wampprotocli.FormatOutputBytes(*c.output, []byte(craChallenge))
 
 	case c.hello.FullCommand():
 		var (
