@@ -447,7 +447,7 @@ func Run(args []string) (string, error) {
 	case c.signCRAChallenge.FullCommand():
 		craKey, err := wampprotocli.DecodeHexOrBase64(*c.craKey)
 		if err != nil {
-			return "", fmt.Errorf("invalid cra-key: %s", err.Error())
+			craKey = []byte(*c.craKey)
 		}
 
 		var craChallenge = *c.craChallenge
@@ -463,7 +463,7 @@ func Run(args []string) (string, error) {
 	case c.verifyCRASignature.FullCommand():
 		craKey, err := wampprotocli.DecodeHexOrBase64(*c.verifyCRAKey)
 		if err != nil {
-			return "", fmt.Errorf("invalid cra-key: %s", err.Error())
+			craKey = []byte(*c.verifyCRAKey)
 		}
 
 		var craChallenge = *c.verifyCRAChallenge
