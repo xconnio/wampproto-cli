@@ -124,3 +124,51 @@ type UnRegistered struct {
 	unRegistered          *kingpin.CmdClause
 	UnRegisteredRequestID *int64
 }
+
+type Subscribe struct {
+	subscribe          *kingpin.CmdClause
+	subscribeRequestID *int64
+	subscribeTopic     *string
+	subscribeOptions   *map[string]string
+}
+
+type Subscribed struct {
+	subscribed          *kingpin.CmdClause
+	subscribedRequestID *int64
+	subscriptionID      *int64
+}
+
+type Publish struct {
+	publish          *kingpin.CmdClause
+	publishRequestID *int64
+	publishTopic     *string
+	publishOptions   *map[string]string
+	publishArgs      *[]string
+	publishKwArgs    *map[string]string
+}
+
+type Published struct {
+	published          *kingpin.CmdClause
+	publishedRequestID *int64
+	publicationID      *int64
+}
+
+type Event struct {
+	event               *kingpin.CmdClause
+	eventSubscriptionID *int64
+	eventPublicationID  *int64
+	eventDetails        *map[string]string
+	eventArgs           *[]string
+	eventKwArgs         *map[string]string
+}
+
+type UnSubscribe struct {
+	unSubscribe               *kingpin.CmdClause
+	unSubscribeRequestID      *int64
+	unSubscribeSubscriptionID *int64
+}
+
+type UnSubscribed struct {
+	unSubscribed          *kingpin.CmdClause
+	unSubscribedRequestID *int64
+}

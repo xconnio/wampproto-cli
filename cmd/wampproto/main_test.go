@@ -480,3 +480,72 @@ func TestUnRegisteredMessage(t *testing.T) {
 
 	testMessageCommand(t, command)
 }
+
+func TestSubscribeMessage(t *testing.T) {
+	var command = "wampproto message subscribe 1 test"
+
+	testMessageCommand(t, command)
+
+	t.Run("WithOptions", func(t *testing.T) {
+		var cmd = command + " -o invoke=roundrobin"
+		output, err := main.Run(strings.Split(cmd, " "))
+		require.NoError(t, err)
+
+		_, err = hex.DecodeString(output)
+		require.NoError(t, err)
+	})
+}
+
+func TestSubscribedMessage(t *testing.T) {
+	var command = "wampproto message subscribed 1 1"
+
+	testMessageCommand(t, command)
+}
+
+func TestPublishMessage(t *testing.T) {
+	var command = "wampproto message publish 1 1"
+
+	testMessageCommand(t, command)
+
+	t.Run("WithArgsKwargsOptions", func(t *testing.T) {
+		var cmd = command + " abc def -o abc=def -k key:value abc=123"
+		output, err := main.Run(strings.Split(cmd, " "))
+		require.NoError(t, err)
+
+		_, err = hex.DecodeString(output)
+		require.NoError(t, err)
+	})
+}
+
+func TestPublishedMessage(t *testing.T) {
+	var command = "wampproto message published 1 1"
+
+	testMessageCommand(t, command)
+}
+
+func TestEventMessage(t *testing.T) {
+	var command = "wampproto message event 1 1"
+
+	testMessageCommand(t, command)
+
+	t.Run("WithArgsKwargsDetails", func(t *testing.T) {
+		var cmd = command + " abc def -d abc=def -k key:value abc=123"
+		output, err := main.Run(strings.Split(cmd, " "))
+		require.NoError(t, err)
+
+		_, err = hex.DecodeString(output)
+		require.NoError(t, err)
+	})
+}
+
+func TestUnSubscribeMessage(t *testing.T) {
+	var command = "wampproto message unsubscribe 1 1"
+
+	testMessageCommand(t, command)
+}
+
+func TestUnSubscribedMessage(t *testing.T) {
+	var command = "wampproto message unsubscribed 1"
+
+	testMessageCommand(t, command)
+}
