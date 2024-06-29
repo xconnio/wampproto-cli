@@ -380,3 +380,9 @@ func TestPublishMessage(t *testing.T) {
 		require.NoError(t, err)
 	})
 }
+
+func TestPublishedMessage(t *testing.T) {
+	var command = "wampproto message published 1 1"
+
+	testMessageCommand(t, command)
+}

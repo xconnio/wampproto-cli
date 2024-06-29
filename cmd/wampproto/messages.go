@@ -83,3 +83,9 @@ type Publish struct {
 	publishArgs      *[]string
 	publishKwArgs    *map[string]string
 }
+
+type Published struct {
+	published          *kingpin.CmdClause
+	publishedRequestID *int64
+	publicationID      *int64
+}

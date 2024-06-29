@@ -39,6 +39,7 @@ type cmd struct {
 	*Subscribe
 	*Subscribed
 	*Publish
+	*Published
 }
 
 func parseCmd(args []string) (*cmd, error) {
@@ -65,6 +66,7 @@ func parseCmd(args []string) (*cmd, error) {
 	subscribeCommand := messageCommand.Command("subscribe", "Subscribe message.")
 	subscribedCommand := messageCommand.Command("subscribed", "Subscribed message.")
 	publishCommand := messageCommand.Command("publish", "Publish message.")
+	publishedCommand := messageCommand.Command("published", "Published message.")
 	c := &cmd{
 		output: app.Flag("output", "Format of the output.").Default("hex").
 			Enum(wampprotocli.HexFormat, wampprotocli.Base64Format),
@@ -173,6 +175,12 @@ func parseCmd(args []string) (*cmd, error) {
 			publishOptions:   publishCommand.Flag("option", "Publish options.").Short('o').StringMap(),
 			publishArgs:      publishCommand.Arg("args", "Publish arguments.").Strings(),
 			publishKwArgs:    publishCommand.Flag("kwargs", "Publish Keyword arguments.").Short('k').StringMap(),
+		},
+
+		Published: &Published{
+			published:          publishedCommand,
+			publishedRequestID: publishedCommand.Arg("request-id", "Published request ID.").Required().Int64(),
+			publicationID:      publishedCommand.Arg("publication-id", "Publication ID.").Required().Int64(),
 		},
 	}
 
@@ -393,6 +401,12 @@ func Run(args []string) (string, error) {
 
 		return serializeMessageAndOutput(serializer, publishMessage, *c.output)
 
+	case c.published.FullCommand():
+		var serializer = wampprotocli.SerializerByName(*c.serializer)
+
+		publishedMessage := messages.NewPublished(*c.publishedRequestID, *c.publicationID)
+
+		return serializeMessageAndOutput(serializer, publishedMessage, *c.output)
 	}
 
 	return "", nil
