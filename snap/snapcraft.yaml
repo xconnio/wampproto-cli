@@ -12,6 +12,7 @@ compression: lzo
 apps:
   wampproto:
     command: bin/wampproto
+    completer: bash_autocomplete.sh
 
 parts:
   wampproto:
@@ -19,3 +20,6 @@ parts:
     source: .
     build-snaps:
       - go
+    override-prime: |
+      craftctl default
+      cp $CRAFT_PART_SRC/bash_autocomplete.sh $CRAFT_PRIME/
