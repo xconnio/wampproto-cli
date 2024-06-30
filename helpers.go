@@ -21,6 +21,20 @@ func HexToBase64(hexStr string) (string, error) {
 	return base64Str, nil
 }
 
+func EnsureBase64(str string) string {
+	base64Str, err := HexToBase64(str)
+	if err == nil {
+		return base64Str
+	}
+
+	_, err = base64.StdEncoding.DecodeString(str)
+	if err == nil {
+		return str
+	}
+
+	return base64.StdEncoding.EncodeToString([]byte(str))
+}
+
 func DecodeHexOrBase64(str string) ([]byte, error) {
 	bytes, err := hex.DecodeString(str)
 	if err == nil {

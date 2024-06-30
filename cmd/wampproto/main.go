@@ -447,20 +447,34 @@ func Run(args []string) (string, error) {
 	case c.signCRAChallenge.FullCommand():
 		craKey, err := wampprotocli.DecodeHexOrBase64(*c.craKey)
 		if err != nil {
-			return "", fmt.Errorf("invalid cra-key: %s", err.Error())
+			craKey = []byte(*c.craKey)
 		}
 
-		signedChallenge := auth.SignCRAChallenge(*c.craChallenge, craKey)
+		var craChallenge = *c.craChallenge
+		craChallengeBytes, err := wampprotocli.DecodeHexOrBase64(craChallenge)
+		if err == nil {
+			craChallenge = string(craChallengeBytes)
+		}
 
-		return wampprotocli.FormatOutputBytes(*c.output, []byte(signedChallenge))
+		signedChallenge := auth.SignCRAChallengeBytes(craChallenge, craKey)
+
+		return wampprotocli.FormatOutputBytes(*c.output, signedChallenge)
 
 	case c.verifyCRASignature.FullCommand():
 		craKey, err := wampprotocli.DecodeHexOrBase64(*c.verifyCRAKey)
 		if err != nil {
-			return "", fmt.Errorf("invalid cra-key: %s", err.Error())
+			craKey = []byte(*c.verifyCRAKey)
 		}
 
-		isVerified := auth.VerifyCRASignature(*c.verifyCRASign, *c.verifyCRAChallenge, craKey)
+		var craChallenge = *c.verifyCRAChallenge
+		craChallengeBytes, err := wampprotocli.DecodeHexOrBase64(craChallenge)
+		if err == nil {
+			craChallenge = string(craChallengeBytes)
+		}
+
+		craSignature := wampprotocli.EnsureBase64(*c.verifyCRASign)
+
+		isVerified := auth.VerifyCRASignature(craSignature, craChallenge, craKey)
 		if !isVerified {
 			return "", fmt.Errorf("signature verification failed")
 		}
