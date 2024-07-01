@@ -3,6 +3,7 @@ package main_test
 import (
 	"encoding/base64"
 	"encoding/hex"
+	"encoding/json"
 	"fmt"
 	"strings"
 	"testing"
@@ -298,6 +299,15 @@ func TestVerifyCRASignature(t *testing.T) {
 }
 
 func testMessageCommand(t *testing.T, command string) {
+	t.Run("OutputRaw", func(t *testing.T) {
+		output, err := main.Run(strings.Split(command, " "))
+		require.NoError(t, err)
+
+		var js json.RawMessage
+		err = json.Unmarshal([]byte(output), &js)
+		require.NoError(t, err)
+	})
+
 	t.Run("OutputHex", func(t *testing.T) {
 		output, err := main.Run(strings.Split(command+" --output hex", " "))
 		require.NoError(t, err)
