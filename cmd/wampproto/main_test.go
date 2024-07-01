@@ -5,6 +5,7 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
+	"strconv"
 	"strings"
 	"testing"
 
@@ -12,6 +13,8 @@ import (
 
 	wampprotocli "github.com/xconnio/wampproto-cli"
 	main "github.com/xconnio/wampproto-cli/cmd/wampproto"
+	"github.com/xconnio/wampproto-go/serializers"
+	wampprotobuf "github.com/xconnio/wampproto-protobuf/go"
 )
 
 func TestRunGenerateChallenge(t *testing.T) {
@@ -356,7 +359,11 @@ func testMessageCommand(t *testing.T, command string) {
 		output, err := main.Run(strings.Split(command+" --serializer cbor", " "))
 		require.NoError(t, err)
 
-		_, err = hex.DecodeString(output)
+		unQuotedStr, err := strconv.Unquote(output)
+		require.NoError(t, err)
+
+		var cborSerializer = serializers.CBORSerializer{}
+		_, err = cborSerializer.Deserialize([]byte(unQuotedStr))
 		require.NoError(t, err)
 	})
 
@@ -364,7 +371,11 @@ func testMessageCommand(t *testing.T, command string) {
 		output, err := main.Run(strings.Split(command+" --serializer msgpack", " "))
 		require.NoError(t, err)
 
-		_, err = hex.DecodeString(output)
+		unQuotedStr, err := strconv.Unquote(output)
+		require.NoError(t, err)
+
+		var msgpackSerializer = serializers.MsgPackSerializer{}
+		_, err = msgpackSerializer.Deserialize([]byte(unQuotedStr))
 		require.NoError(t, err)
 	})
 
@@ -372,7 +383,11 @@ func testMessageCommand(t *testing.T, command string) {
 		output, err := main.Run(strings.Split(command+" --serializer protobuf", " "))
 		require.NoError(t, err)
 
-		_, err = hex.DecodeString(output)
+		unQuotedStr, err := strconv.Unquote(output)
+		require.NoError(t, err)
+
+		var protobufSerializer = wampprotobuf.ProtobufSerializer{}
+		_, err = protobufSerializer.Deserialize([]byte(unQuotedStr))
 		require.NoError(t, err)
 	})
 }

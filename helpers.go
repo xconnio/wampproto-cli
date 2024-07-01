@@ -69,7 +69,7 @@ func FormatOutput(outputFormat, outputString string) (string, error) {
 
 func FormatOutputBytes(outputFormat string, outputBytes []byte) (string, error) {
 	switch outputFormat {
-	case "":
+	case RawFormat:
 		return string(outputBytes), nil
 	case HexFormat:
 		return hex.EncodeToString(outputBytes), nil

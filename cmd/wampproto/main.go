@@ -98,7 +98,8 @@ func parseCmd(args []string) (*cmd, error) {
 	unSubscribeCommand := messageCommand.Command("unsubscribe", "Unsubscribe message.")
 	unSubscribedCommand := messageCommand.Command("unsubscribed", "Unsubscribed message.")
 	c := &cmd{
-		output: app.Flag("output", "Format of the output.").Enum(wampprotocli.HexFormat, wampprotocli.Base64Format),
+		output: app.Flag("output", "Format of the output.").Default(wampprotocli.RawFormat).
+			Enum(wampprotocli.RawFormat, wampprotocli.HexFormat, wampprotocli.Base64Format),
 
 		auth: authCommand,
 
@@ -454,7 +455,7 @@ func Run(args []string) (string, error) {
 			craChallenge = string(craChallengeBytes)
 		}
 
-		if *c.output == "" {
+		if *c.output == wampprotocli.RawFormat {
 			return auth.SignCRAChallenge(craChallenge, craKey), nil
 		}
 
@@ -693,8 +694,12 @@ func serializeMessageAndOutput(serializerStr string, message messages.Message, o
 		return "", err
 	}
 
-	if outputFormat == "" && serializerStr != wampprotocli.JsonSerializer {
-		outputFormat = wampprotocli.HexFormat
+	if outputFormat == wampprotocli.RawFormat {
+		if serializerStr == wampprotocli.JsonSerializer {
+			return string(serializedMessage), nil
+		}
+
+		return fmt.Sprintf("%q", serializedMessage), nil
 	}
 
 	return wampprotocli.FormatOutputBytes(outputFormat, serializedMessage)
