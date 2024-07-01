@@ -51,7 +51,7 @@ func DecodeHexOrBase64(str string) ([]byte, error) {
 
 func FormatOutput(outputFormat, outputString string) (string, error) {
 	switch outputFormat {
-	case HexFormat, "":
+	case HexFormat, RawFormat:
 		return outputString, nil
 
 	case Base64Format:
