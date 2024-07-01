@@ -663,7 +663,7 @@ func Run(args []string) (string, error) {
 	case c.unRegister.FullCommand():
 		var serializer = wampprotocli.SerializerByName(*c.serializer)
 
-		unRegisterMessage := messages.NewUnRegister(*c.registeredRequestID, *c.unRegRegistrationID)
+		unRegisterMessage := messages.NewUnRegister(*c.unRegRequestID, *c.unRegRegistrationID)
 
 		return serializeMessageAndOutput(serializer, unRegisterMessage, *c.output)
 
