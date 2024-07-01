@@ -212,7 +212,7 @@ func TestGenerateCryptoSignKeypair(t *testing.T) {
 
 func TestGenerateCRAChallenge(t *testing.T) {
 	t.Run("OutputHex", func(t *testing.T) {
-		var command = "wampproto auth cra generate-challenge 1 test anonymmous dynamic"
+		var command = "wampproto auth cra generate-challenge 1 test anonymmous dynamic --output hex"
 
 		challenge, err := main.Run(strings.Split(command, " "))
 		require.NoError(t, err)
@@ -236,7 +236,7 @@ func TestGenerateCRAChallenge(t *testing.T) {
 
 func TestDeriveCRAKey(t *testing.T) {
 	t.Run("OutputHex", func(t *testing.T) {
-		var command = "wampproto auth cra derive-key foobar secret"
+		var command = "wampproto auth cra derive-key foobar secret --output hex"
 
 		challenge, err := main.Run(strings.Split(command, " "))
 		require.NoError(t, err)
@@ -264,7 +264,8 @@ func TestSignCRAChallenge(t *testing.T) {
 	var command = fmt.Sprintf("wampproto auth cra sign-challenge foobar %s", testCRAKey)
 
 	t.Run("OutputHex", func(t *testing.T) {
-		challenge, err := main.Run(strings.Split(command, " "))
+		var hexCommand = command + " --output hex"
+		challenge, err := main.Run(strings.Split(hexCommand, " "))
 		require.NoError(t, err)
 
 		// validate that the output is a validate hex string
@@ -273,9 +274,9 @@ func TestSignCRAChallenge(t *testing.T) {
 	})
 
 	t.Run("OutputBase64", func(t *testing.T) {
-		command = command + " --output base64"
+		var base64Command = command + " --output base64"
 
-		challenge, err := main.Run(strings.Split(command, " "))
+		challenge, err := main.Run(strings.Split(base64Command, " "))
 		require.NoError(t, err)
 
 		// validate that the output is a valid base64 string
@@ -298,7 +299,7 @@ func TestVerifyCRASignature(t *testing.T) {
 
 func testMessageCommand(t *testing.T, command string) {
 	t.Run("OutputHex", func(t *testing.T) {
-		output, err := main.Run(strings.Split(command, " "))
+		output, err := main.Run(strings.Split(command+" --output hex", " "))
 		require.NoError(t, err)
 
 		_, err = hex.DecodeString(output)
@@ -345,7 +346,7 @@ func TestHelloMessage(t *testing.T) {
 	testMessageCommand(t, command)
 
 	t.Run("NoAuthExtraNoRoles", func(t *testing.T) {
-		var cmd = "wampproto message hello realm1 anonymous ticket wampcra"
+		var cmd = "wampproto message hello realm1 anonymous ticket wampcra --output hex"
 		output, err := main.Run(strings.Split(cmd, " "))
 		require.NoError(t, err)
 
@@ -360,7 +361,7 @@ func TestWelcomeMessage(t *testing.T) {
 	testMessageCommand(t, command)
 
 	t.Run("NoDetails", func(t *testing.T) {
-		var cmd = "wampproto message welcome 1"
+		var cmd = "wampproto message welcome 1 --output hex"
 		output, err := main.Run(strings.Split(cmd, " "))
 		require.NoError(t, err)
 
@@ -375,7 +376,7 @@ func TestChallengeMessage(t *testing.T) {
 	testMessageCommand(t, command)
 
 	t.Run("NoExtra", func(t *testing.T) {
-		var cmd = "wampproto message challenge cryptosign"
+		var cmd = "wampproto message challenge cryptosign --output hex"
 		output, err := main.Run(strings.Split(cmd, " "))
 		require.NoError(t, err)
 
@@ -390,7 +391,7 @@ func TestAuthenticateMessage(t *testing.T) {
 	testMessageCommand(t, command)
 
 	t.Run("NoExtra", func(t *testing.T) {
-		var cmd = "wampproto message authenticate abc"
+		var cmd = "wampproto message authenticate abc --output hex"
 		output, err := main.Run(strings.Split(cmd, " "))
 		require.NoError(t, err)
 
@@ -405,7 +406,7 @@ func TestAbortMessage(t *testing.T) {
 	testMessageCommand(t, command)
 
 	t.Run("NoArgsKwargsDetails", func(t *testing.T) {
-		var cmd = "wampproto message abort noreason"
+		var cmd = "wampproto message abort noreason --output hex"
 		output, err := main.Run(strings.Split(cmd, " "))
 		require.NoError(t, err)
 
@@ -420,7 +421,7 @@ func TestErrorMessage(t *testing.T) {
 	testMessageCommand(t, command)
 
 	t.Run("NoArgsKwargsDetails", func(t *testing.T) {
-		var cmd = "wampproto message error 1 1 wamp.error"
+		var cmd = "wampproto message error 1 1 wamp.error --output hex"
 		output, err := main.Run(strings.Split(cmd, " "))
 		require.NoError(t, err)
 
@@ -435,7 +436,7 @@ func TestCancelMessage(t *testing.T) {
 	testMessageCommand(t, command)
 
 	t.Run("NoOptions", func(t *testing.T) {
-		var cmd = "wampproto message cancel 1"
+		var cmd = "wampproto message cancel 1 --output hex"
 		output, err := main.Run(strings.Split(cmd, " "))
 		require.NoError(t, err)
 
@@ -450,7 +451,7 @@ func TestInterruptMessage(t *testing.T) {
 	testMessageCommand(t, command)
 
 	t.Run("NoOptions", func(t *testing.T) {
-		var cmd = "wampproto message interrupt 1"
+		var cmd = "wampproto message interrupt 1 --output hex"
 		output, err := main.Run(strings.Split(cmd, " "))
 		require.NoError(t, err)
 
@@ -465,7 +466,7 @@ func TestGoodByeMessage(t *testing.T) {
 	testMessageCommand(t, command)
 
 	t.Run("NoDetails", func(t *testing.T) {
-		var cmd = "wampproto message goodbye unknown"
+		var cmd = "wampproto message goodbye unknown --output hex"
 		output, err := main.Run(strings.Split(cmd, " "))
 		require.NoError(t, err)
 
@@ -480,7 +481,7 @@ func TestCallMessage(t *testing.T) {
 	testMessageCommand(t, command)
 
 	t.Run("NoArgsKwargs", func(t *testing.T) {
-		var cmd = "wampproto message call 1 io.xconn.test"
+		var cmd = "wampproto message call 1 io.xconn.test --output hex"
 		output, err := main.Run(strings.Split(cmd, " "))
 		require.NoError(t, err)
 
@@ -495,7 +496,7 @@ func TestResultMessage(t *testing.T) {
 	testMessageCommand(t, command)
 
 	t.Run("WithArgsKwargsDetails", func(t *testing.T) {
-		var cmd = command + " abc def --detail abc=def -k key:value abc=123"
+		var cmd = command + " abc def --detail abc=def -k key:value abc=123 --output hex"
 		output, err := main.Run(strings.Split(cmd, " "))
 		require.NoError(t, err)
 
@@ -510,7 +511,7 @@ func TestRegisterMessage(t *testing.T) {
 	testMessageCommand(t, command)
 
 	t.Run("WithOptions", func(t *testing.T) {
-		var cmd = command + " -o invoke=roundrobin"
+		var cmd = command + " -o invoke=roundrobin --output hex"
 		output, err := main.Run(strings.Split(cmd, " "))
 		require.NoError(t, err)
 
@@ -531,7 +532,7 @@ func TestInvocationMessage(t *testing.T) {
 	testMessageCommand(t, command)
 
 	t.Run("WithArgsKwargsDetails", func(t *testing.T) {
-		var cmd = command + " abc def --detail abc=def -k key:value abc=123"
+		var cmd = command + " abc def --detail abc=def -k key:value abc=123 --output hex"
 		output, err := main.Run(strings.Split(cmd, " "))
 		require.NoError(t, err)
 
@@ -546,7 +547,7 @@ func TestYieldMessage(t *testing.T) {
 	testMessageCommand(t, command)
 
 	t.Run("WithArgsKwargsOptions", func(t *testing.T) {
-		var cmd = command + " abc def -o abc=def -k key:value abc=123"
+		var cmd = command + " abc def -o abc=def -k key:value abc=123 --output hex"
 		output, err := main.Run(strings.Split(cmd, " "))
 		require.NoError(t, err)
 
@@ -573,7 +574,7 @@ func TestSubscribeMessage(t *testing.T) {
 	testMessageCommand(t, command)
 
 	t.Run("WithOptions", func(t *testing.T) {
-		var cmd = command + " -o invoke=roundrobin"
+		var cmd = command + " -o invoke=roundrobin --output hex"
 		output, err := main.Run(strings.Split(cmd, " "))
 		require.NoError(t, err)
 
@@ -594,7 +595,7 @@ func TestPublishMessage(t *testing.T) {
 	testMessageCommand(t, command)
 
 	t.Run("WithArgsKwargsOptions", func(t *testing.T) {
-		var cmd = command + " abc def -o abc=def -k key:value abc=123"
+		var cmd = command + " abc def -o abc=def -k key:value abc=123 --output hex"
 		output, err := main.Run(strings.Split(cmd, " "))
 		require.NoError(t, err)
 
@@ -615,7 +616,7 @@ func TestEventMessage(t *testing.T) {
 	testMessageCommand(t, command)
 
 	t.Run("WithArgsKwargsDetails", func(t *testing.T) {
-		var cmd = command + " abc def -d abc=def -k key:value abc=123"
+		var cmd = command + " abc def -d abc=def -k key:value abc=123 --output hex"
 		output, err := main.Run(strings.Split(cmd, " "))
 		require.NoError(t, err)
 

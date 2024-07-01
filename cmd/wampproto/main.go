@@ -11,7 +11,6 @@ import (
 	wampprotocli "github.com/xconnio/wampproto-cli"
 	"github.com/xconnio/wampproto-go/auth"
 	"github.com/xconnio/wampproto-go/messages"
-	"github.com/xconnio/wampproto-go/serializers"
 )
 
 const (
@@ -99,8 +98,7 @@ func parseCmd(args []string) (*cmd, error) {
 	unSubscribeCommand := messageCommand.Command("unsubscribe", "Unsubscribe message.")
 	unSubscribedCommand := messageCommand.Command("unsubscribed", "Unsubscribed message.")
 	c := &cmd{
-		output: app.Flag("output", "Format of the output.").Default("hex").
-			Enum(wampprotocli.HexFormat, wampprotocli.Base64Format),
+		output: app.Flag("output", "Format of the output.").Enum(wampprotocli.HexFormat, wampprotocli.Base64Format),
 
 		auth: authCommand,
 
@@ -483,273 +481,216 @@ func Run(args []string) (string, error) {
 		var (
 			authExtra = wampprotocli.StringMapToTypedMap(*c.authExtra)
 			roles     = wampprotocli.StringMapToTypedMap(*c.roles)
-
-			serializer = wampprotocli.SerializerByName(*c.serializer)
 		)
 
 		helloMessage := messages.NewHello(*c.realm, *c.authID, authExtra, roles, *c.authMethods)
 
-		return serializeMessageAndOutput(serializer, helloMessage, *c.output)
+		return serializeMessageAndOutput(*c.serializer, helloMessage, *c.output)
 
 	case c.welcome.FullCommand():
-		var (
-			details = wampprotocli.StringMapToTypedMap(*c.welcomeDetails)
-
-			serializer = wampprotocli.SerializerByName(*c.serializer)
-		)
+		var details = wampprotocli.StringMapToTypedMap(*c.welcomeDetails)
 
 		welcomeMessage := messages.NewWelcome(*c.sessionID, details)
 
-		return serializeMessageAndOutput(serializer, welcomeMessage, *c.output)
+		return serializeMessageAndOutput(*c.serializer, welcomeMessage, *c.output)
 
 	case c.challenge.FullCommand():
-		var (
-			challengeExtra = wampprotocli.StringMapToTypedMap(*c.challengeExtra)
-
-			serializer = wampprotocli.SerializerByName(*c.serializer)
-		)
+		var challengeExtra = wampprotocli.StringMapToTypedMap(*c.challengeExtra)
 
 		challengeMessage := messages.NewChallenge(*c.authMethod, challengeExtra)
 
-		return serializeMessageAndOutput(serializer, challengeMessage, *c.output)
+		return serializeMessageAndOutput(*c.serializer, challengeMessage, *c.output)
 
 	case c.authenticate.FullCommand():
-		var (
-			authenticateExtra = wampprotocli.StringMapToTypedMap(*c.authenticateExtra)
-
-			serializer = wampprotocli.SerializerByName(*c.serializer)
-		)
+		var authenticateExtra = wampprotocli.StringMapToTypedMap(*c.authenticateExtra)
 
 		authenticateMessage := messages.NewAuthenticate(*c.signature, authenticateExtra)
 
-		return serializeMessageAndOutput(serializer, authenticateMessage, *c.output)
+		return serializeMessageAndOutput(*c.serializer, authenticateMessage, *c.output)
 
 	case c.abort.FullCommand():
 		var (
 			abortDetails = wampprotocli.StringMapToTypedMap(*c.abortDetails)
 			abortArgs    = wampprotocli.StringsToTypedList(*c.abortArgs)
 			abortKwargs  = wampprotocli.StringMapToTypedMap(*c.abortKwArgs)
-
-			serializer = wampprotocli.SerializerByName(*c.serializer)
 		)
 
 		abortMessage := messages.NewAbort(abortDetails, *c.abortReason, abortArgs, abortKwargs)
 
-		return serializeMessageAndOutput(serializer, abortMessage, *c.output)
+		return serializeMessageAndOutput(*c.serializer, abortMessage, *c.output)
 
 	case c.error.FullCommand():
 		var (
 			errorDetails = wampprotocli.StringMapToTypedMap(*c.errorDetails)
 			errorArgs    = wampprotocli.StringsToTypedList(*c.errorArgs)
 			errorKwargs  = wampprotocli.StringMapToTypedMap(*c.errorKwArgs)
-
-			serializer = wampprotocli.SerializerByName(*c.serializer)
 		)
 
 		errorMessage := messages.NewError(*c.messageType, *c.errorRequestID, errorDetails, *c.errorUri, errorArgs,
 			errorKwargs)
 
-		return serializeMessageAndOutput(serializer, errorMessage, *c.output)
+		return serializeMessageAndOutput(*c.serializer, errorMessage, *c.output)
 
 	case c.cancel.FullCommand():
-		var (
-			cancelOptions = wampprotocli.StringMapToTypedMap(*c.cancelOptions)
-
-			serializer = wampprotocli.SerializerByName(*c.serializer)
-		)
+		var cancelOptions = wampprotocli.StringMapToTypedMap(*c.cancelOptions)
 
 		cancelMessage := messages.NewCancel(*c.sessionID, cancelOptions)
 
-		return serializeMessageAndOutput(serializer, cancelMessage, *c.output)
+		return serializeMessageAndOutput(*c.serializer, cancelMessage, *c.output)
 
 	case c.interrupt.FullCommand():
-		var (
-			interruptOptions = wampprotocli.StringMapToTypedMap(*c.interruptOptions)
-
-			serializer = wampprotocli.SerializerByName(*c.serializer)
-		)
+		var interruptOptions = wampprotocli.StringMapToTypedMap(*c.interruptOptions)
 
 		interruptMessage := messages.NewInterrupt(*c.sessionID, interruptOptions)
 
-		return serializeMessageAndOutput(serializer, interruptMessage, *c.output)
+		return serializeMessageAndOutput(*c.serializer, interruptMessage, *c.output)
 
 	case c.goodBye.FullCommand():
-		var (
-			goodByeDetails = wampprotocli.StringMapToTypedMap(*c.goodByeDetails)
+		var goodByeDetails = wampprotocli.StringMapToTypedMap(*c.goodByeDetails)
 
-			serializer = wampprotocli.SerializerByName(*c.serializer)
-		)
 		goodByeMessage := messages.NewGoodBye(*c.goodByeReason, goodByeDetails)
 
-		return serializeMessageAndOutput(serializer, goodByeMessage, *c.output)
+		return serializeMessageAndOutput(*c.serializer, goodByeMessage, *c.output)
 
 	case c.call.FullCommand():
 		var (
 			options   = wampprotocli.StringMapToTypedMap(*c.callOption)
 			arguments = wampprotocli.StringsToTypedList(*c.callArgs)
 			kwargs    = wampprotocli.StringMapToTypedMap(*c.callKwargs)
-
-			serializer = wampprotocli.SerializerByName(*c.serializer)
 		)
 
 		arguments, kwargs = wampprotocli.UpdateArgsKwArgsIfEmpty(arguments, kwargs)
 
 		callMessage := messages.NewCall(*c.callRequestID, options, *c.callURI, arguments, kwargs)
 
-		return serializeMessageAndOutput(serializer, callMessage, *c.output)
+		return serializeMessageAndOutput(*c.serializer, callMessage, *c.output)
 
 	case c.result.FullCommand():
 		var (
 			details   = wampprotocli.StringMapToTypedMap(*c.resultDetails)
 			arguments = wampprotocli.StringsToTypedList(*c.resultArgs)
 			kwargs    = wampprotocli.StringMapToTypedMap(*c.resultKwargs)
-
-			serializer = wampprotocli.SerializerByName(*c.serializer)
 		)
 
 		arguments, kwargs = wampprotocli.UpdateArgsKwArgsIfEmpty(arguments, kwargs)
 
 		resultMessage := messages.NewResult(*c.resultRequestID, details, arguments, kwargs)
 
-		return serializeMessageAndOutput(serializer, resultMessage, *c.output)
+		return serializeMessageAndOutput(*c.serializer, resultMessage, *c.output)
 
 	case c.register.FullCommand():
-		var (
-			options    = wampprotocli.StringMapToTypedMap(*c.regOptions)
-			serializer = wampprotocli.SerializerByName(*c.serializer)
-		)
+		var options = wampprotocli.StringMapToTypedMap(*c.regOptions)
 
 		regMessage := messages.NewRegister(*c.regRequestID, options, *c.regProcedure)
 
-		return serializeMessageAndOutput(serializer, regMessage, *c.output)
+		return serializeMessageAndOutput(*c.serializer, regMessage, *c.output)
 
 	case c.registered.FullCommand():
-		var serializer = wampprotocli.SerializerByName(*c.serializer)
-
 		registeredCmd := messages.NewRegistered(*c.registeredRequestID, *c.registrationID)
 
-		return serializeMessageAndOutput(serializer, registeredCmd, *c.output)
+		return serializeMessageAndOutput(*c.serializer, registeredCmd, *c.output)
 
 	case c.invocation.FullCommand():
 		var (
 			details   = wampprotocli.StringMapToTypedMap(*c.invDetails)
 			arguments = wampprotocli.StringsToTypedList(*c.invArgs)
 			kwargs    = wampprotocli.StringMapToTypedMap(*c.invKwArgs)
-
-			serializer = wampprotocli.SerializerByName(*c.serializer)
 		)
 
 		arguments, kwargs = wampprotocli.UpdateArgsKwArgsIfEmpty(arguments, kwargs)
 
 		invocationMessage := messages.NewInvocation(*c.invRequestID, *c.invRegistrationID, details, arguments, kwargs)
 
-		return serializeMessageAndOutput(serializer, invocationMessage, *c.output)
+		return serializeMessageAndOutput(*c.serializer, invocationMessage, *c.output)
 
 	case c.yield.FullCommand():
 		var (
 			options   = wampprotocli.StringMapToTypedMap(*c.yieldOptions)
 			arguments = wampprotocli.StringsToTypedList(*c.yieldArgs)
 			kwargs    = wampprotocli.StringMapToTypedMap(*c.yieldKwArgs)
-
-			serializer = wampprotocli.SerializerByName(*c.serializer)
 		)
 
 		arguments, kwargs = wampprotocli.UpdateArgsKwArgsIfEmpty(arguments, kwargs)
 
 		yieldMessage := messages.NewYield(*c.yieldRequestID, options, arguments, kwargs)
 
-		return serializeMessageAndOutput(serializer, yieldMessage, *c.output)
+		return serializeMessageAndOutput(*c.serializer, yieldMessage, *c.output)
 
 	case c.unRegister.FullCommand():
-		var serializer = wampprotocli.SerializerByName(*c.serializer)
-
 		unRegisterMessage := messages.NewUnRegister(*c.unRegRequestID, *c.unRegRegistrationID)
 
-		return serializeMessageAndOutput(serializer, unRegisterMessage, *c.output)
+		return serializeMessageAndOutput(*c.serializer, unRegisterMessage, *c.output)
 
 	case c.unRegistered.FullCommand():
-		var serializer = wampprotocli.SerializerByName(*c.serializer)
-
 		unRegisteredMessage := messages.NewUnRegistered(*c.UnRegisteredRequestID)
 
-		return serializeMessageAndOutput(serializer, unRegisteredMessage, *c.output)
+		return serializeMessageAndOutput(*c.serializer, unRegisteredMessage, *c.output)
 
 	case c.subscribe.FullCommand():
-		var (
-			subscribeOptions = wampprotocli.StringMapToTypedMap(*c.subscribeOptions)
-
-			serializer = wampprotocli.SerializerByName(*c.serializer)
-		)
+		var subscribeOptions = wampprotocli.StringMapToTypedMap(*c.subscribeOptions)
 
 		subscribeMessage := messages.NewSubscribe(*c.subscribeRequestID, subscribeOptions, *c.subscribeTopic)
 
-		return serializeMessageAndOutput(serializer, subscribeMessage, *c.output)
+		return serializeMessageAndOutput(*c.serializer, subscribeMessage, *c.output)
 
 	case c.subscribed.FullCommand():
-		var serializer = wampprotocli.SerializerByName(*c.serializer)
-
 		subscribedMessage := messages.NewSubscribed(*c.subscribedRequestID, *c.subscriptionID)
 
-		return serializeMessageAndOutput(serializer, subscribedMessage, *c.output)
+		return serializeMessageAndOutput(*c.serializer, subscribedMessage, *c.output)
 
 	case c.publish.FullCommand():
 		var (
 			publishOptions = wampprotocli.StringMapToTypedMap(*c.publishOptions)
 			publishArgs    = wampprotocli.StringsToTypedList(*c.publishArgs)
 			publishKwargs  = wampprotocli.StringMapToTypedMap(*c.publishKwArgs)
-
-			serializer = wampprotocli.SerializerByName(*c.serializer)
 		)
 
 		publishMessage := messages.NewPublish(*c.publishRequestID, publishOptions, *c.publishTopic, publishArgs,
 			publishKwargs)
 
-		return serializeMessageAndOutput(serializer, publishMessage, *c.output)
+		return serializeMessageAndOutput(*c.serializer, publishMessage, *c.output)
 
 	case c.published.FullCommand():
-		var serializer = wampprotocli.SerializerByName(*c.serializer)
-
 		publishedMessage := messages.NewPublished(*c.publishedRequestID, *c.publicationID)
 
-		return serializeMessageAndOutput(serializer, publishedMessage, *c.output)
+		return serializeMessageAndOutput(*c.serializer, publishedMessage, *c.output)
 
 	case c.event.FullCommand():
 		var (
 			eventDetails = wampprotocli.StringMapToTypedMap(*c.eventDetails)
 			eventArgs    = wampprotocli.StringsToTypedList(*c.eventArgs)
 			eventKwargs  = wampprotocli.StringMapToTypedMap(*c.eventKwArgs)
-
-			serializer = wampprotocli.SerializerByName(*c.serializer)
 		)
 
 		eventMessage := messages.NewEvent(*c.subscriptionID, *c.publishRequestID, eventDetails, eventArgs, eventKwargs)
 
-		return serializeMessageAndOutput(serializer, eventMessage, *c.output)
+		return serializeMessageAndOutput(*c.serializer, eventMessage, *c.output)
 
 	case c.unSubscribe.FullCommand():
-		var serializer = wampprotocli.SerializerByName(*c.serializer)
-
 		unSubscribeMessage := messages.NewUnSubscribe(*c.unSubscribeRequestID, *c.unSubscribeSubscriptionID)
 
-		return serializeMessageAndOutput(serializer, unSubscribeMessage, *c.output)
+		return serializeMessageAndOutput(*c.serializer, unSubscribeMessage, *c.output)
 
 	case c.unSubscribed.FullCommand():
-		var serializer = wampprotocli.SerializerByName(*c.serializer)
-
 		unSubscribedMessage := messages.NewUnSubscribed(*c.unSubscribedRequestID)
 
-		return serializeMessageAndOutput(serializer, unSubscribedMessage, *c.output)
+		return serializeMessageAndOutput(*c.serializer, unSubscribedMessage, *c.output)
 
 	}
 
 	return "", nil
 }
 
-func serializeMessageAndOutput(serializer serializers.Serializer, message messages.Message,
-	outputFormat string) (string, error) {
+func serializeMessageAndOutput(serializerStr string, message messages.Message, outputFormat string) (string, error) {
+	var serializer = wampprotocli.SerializerByName(serializerStr)
+
 	serializedMessage, err := serializer.Serialize(message)
 	if err != nil {
 		return "", err
+	}
+
+	if outputFormat == "" && serializerStr != wampprotocli.JsonSerializer {
+		outputFormat = wampprotocli.HexFormat
 	}
 
 	return wampprotocli.FormatOutputBytes(outputFormat, serializedMessage)
