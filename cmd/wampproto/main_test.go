@@ -264,24 +264,33 @@ func TestSignCRAChallenge(t *testing.T) {
 
 	var command = fmt.Sprintf("wampproto auth cra sign-challenge foobar %s", testCRAKey)
 
+	t.Run("OutputDefault", func(t *testing.T) {
+		signature, err := main.Run(strings.Split(command, " "))
+		require.NoError(t, err)
+
+		// validate that the output is a valid base64 string
+		_, err = base64.StdEncoding.DecodeString(signature)
+		require.NoError(t, err)
+	})
+
 	t.Run("OutputHex", func(t *testing.T) {
 		var hexCommand = command + " --output hex"
-		challenge, err := main.Run(strings.Split(hexCommand, " "))
+		signature, err := main.Run(strings.Split(hexCommand, " "))
 		require.NoError(t, err)
 
 		// validate that the output is a validate hex string
-		_, err = hex.DecodeString(challenge)
+		_, err = hex.DecodeString(signature)
 		require.NoError(t, err)
 	})
 
 	t.Run("OutputBase64", func(t *testing.T) {
 		var base64Command = command + " --output base64"
 
-		challenge, err := main.Run(strings.Split(base64Command, " "))
+		signature, err := main.Run(strings.Split(base64Command, " "))
 		require.NoError(t, err)
 
 		// validate that the output is a valid base64 string
-		_, err = base64.StdEncoding.DecodeString(challenge)
+		_, err = base64.StdEncoding.DecodeString(signature)
 		require.NoError(t, err)
 	})
 }

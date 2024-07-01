@@ -454,6 +454,10 @@ func Run(args []string) (string, error) {
 			craChallenge = string(craChallengeBytes)
 		}
 
+		if *c.output == "" {
+			return auth.SignCRAChallenge(craChallenge, craKey), nil
+		}
+
 		signedChallenge := auth.SignCRAChallengeBytes(craChallenge, craKey)
 
 		return wampprotocli.FormatOutputBytes(*c.output, signedChallenge)
