@@ -1,6 +1,7 @@
 package wampprotocli
 
 const (
+	RawFormat    = "raw"
 	HexFormat    = "hex"
 	Base64Format = "base64"
 
