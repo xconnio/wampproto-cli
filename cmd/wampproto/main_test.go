@@ -212,21 +212,33 @@ func TestGenerateCryptoSignKeypair(t *testing.T) {
 }
 
 func TestGenerateCRAChallenge(t *testing.T) {
-	t.Run("OutputHex", func(t *testing.T) {
-		var command = "wampproto auth cra generate-challenge 1 test anonymmous dynamic --output hex"
+	var command = "wampproto auth cra generate-challenge 1 test anonymmous dynamic"
 
+	t.Run("OutputRaw", func(t *testing.T) {
 		challenge, err := main.Run(strings.Split(command, " "))
 		require.NoError(t, err)
 
-		// validate that the output is a validate hex string
+		// validate that the output is a valid json
+		var js json.RawMessage
+		err = json.Unmarshal([]byte(challenge), &js)
+		require.NoError(t, err)
+	})
+
+	t.Run("OutputHex", func(t *testing.T) {
+		var hexCommand = command + " --output hex"
+
+		challenge, err := main.Run(strings.Split(hexCommand, " "))
+		require.NoError(t, err)
+
+		// validate that the output is a valid hex string
 		_, err = hex.DecodeString(challenge)
 		require.NoError(t, err)
 	})
 
 	t.Run("OutputBase64", func(t *testing.T) {
-		var command = "wampproto auth cra generate-challenge 1 test anonymmous dynamic --output base64"
+		var base64Command = command + " --output base64"
 
-		challenge, err := main.Run(strings.Split(command, " "))
+		challenge, err := main.Run(strings.Split(base64Command, " "))
 		require.NoError(t, err)
 
 		// validate that the output is a valid base64 string
@@ -236,25 +248,32 @@ func TestGenerateCRAChallenge(t *testing.T) {
 }
 
 func TestDeriveCRAKey(t *testing.T) {
-	t.Run("OutputHex", func(t *testing.T) {
-		var command = "wampproto auth cra derive-key foobar secret --output hex"
+	var command = "wampproto auth cra derive-key foobar secret"
 
-		challenge, err := main.Run(strings.Split(command, " "))
+	t.Run("OutputRaw", func(t *testing.T) {
+		_, err := main.Run(strings.Split(command, " "))
+		require.NoError(t, err)
+	})
+
+	t.Run("OutputHex", func(t *testing.T) {
+		var hexCommand = command + " --output hex"
+
+		key, err := main.Run(strings.Split(hexCommand, " "))
 		require.NoError(t, err)
 
-		// validate that the output is a validate hex string
-		_, err = hex.DecodeString(challenge)
+		// validate that the output is a valid hex string
+		_, err = hex.DecodeString(key)
 		require.NoError(t, err)
 	})
 
 	t.Run("OutputBase64", func(t *testing.T) {
-		var command = "wampproto auth cra derive-key abc test --iteration 1000 --keylen 32 --output base64"
+		var base64Command = command + " --iteration 1000 --keylen 32 --output base64"
 
-		challenge, err := main.Run(strings.Split(command, " "))
+		key, err := main.Run(strings.Split(base64Command, " "))
 		require.NoError(t, err)
 
 		// validate that the output is a valid base64 string
-		_, err = base64.StdEncoding.DecodeString(challenge)
+		_, err = base64.StdEncoding.DecodeString(key)
 		require.NoError(t, err)
 	})
 }
@@ -278,7 +297,7 @@ func TestSignCRAChallenge(t *testing.T) {
 		signature, err := main.Run(strings.Split(hexCommand, " "))
 		require.NoError(t, err)
 
-		// validate that the output is a validate hex string
+		// validate that the output is a valid hex string
 		_, err = hex.DecodeString(signature)
 		require.NoError(t, err)
 	})
