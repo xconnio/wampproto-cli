@@ -542,7 +542,7 @@ func Run(args []string) (string, error) {
 	case c.cancel.FullCommand():
 		var cancelOptions = wampprotocli.StringMapToTypedMap(*c.cancelOptions)
 
-		cancelMessage := messages.NewCancel(*c.sessionID, cancelOptions)
+		cancelMessage := messages.NewCancel(*c.cancelRequestID, cancelOptions)
 
 		return serializeMessageAndOutput(*c.serializer, cancelMessage, *c.output)
 
