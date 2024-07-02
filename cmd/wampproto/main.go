@@ -549,7 +549,7 @@ func Run(args []string) (string, error) {
 	case c.interrupt.FullCommand():
 		var interruptOptions = wampprotocli.StringMapToTypedMap(*c.interruptOptions)
 
-		interruptMessage := messages.NewInterrupt(*c.sessionID, interruptOptions)
+		interruptMessage := messages.NewInterrupt(*c.interruptRequestID, interruptOptions)
 
 		return serializeMessageAndOutput(*c.serializer, interruptMessage, *c.output)
 
