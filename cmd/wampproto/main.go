@@ -673,7 +673,7 @@ func Run(args []string) (string, error) {
 
 		arguments, kwargs := wampprotocli.UpdateArgsKwArgsIfEmpty(eventArgs, eventKwargs)
 
-		eventMessage := messages.NewEvent(*c.subscriptionID, *c.publishRequestID, eventDetails, arguments, kwargs)
+		eventMessage := messages.NewEvent(*c.eventSubscriptionID, *c.eventPublicationID, eventDetails, arguments, kwargs)
 
 		return serializeMessageAndOutput(*c.serializer, eventMessage, *c.output)
 
