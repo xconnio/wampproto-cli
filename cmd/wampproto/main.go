@@ -520,7 +520,9 @@ func Run(args []string) (string, error) {
 			abortKwargs  = wampprotocli.StringMapToTypedMap(*c.abortKwArgs)
 		)
 
-		abortMessage := messages.NewAbort(abortDetails, *c.abortReason, abortArgs, abortKwargs)
+		arguments, kwargs := wampprotocli.UpdateArgsKwArgsIfEmpty(abortArgs, abortKwargs)
+
+		abortMessage := messages.NewAbort(abortDetails, *c.abortReason, arguments, kwargs)
 
 		return serializeMessageAndOutput(*c.serializer, abortMessage, *c.output)
 
@@ -531,8 +533,9 @@ func Run(args []string) (string, error) {
 			errorKwargs  = wampprotocli.StringMapToTypedMap(*c.errorKwArgs)
 		)
 
-		errorMessage := messages.NewError(*c.messageType, *c.errorRequestID, errorDetails, *c.errorUri, errorArgs,
-			errorKwargs)
+		arguments, kwargs := wampprotocli.UpdateArgsKwArgsIfEmpty(errorArgs, errorKwargs)
+
+		errorMessage := messages.NewError(*c.messageType, *c.errorRequestID, errorDetails, *c.errorUri, arguments, kwargs)
 
 		return serializeMessageAndOutput(*c.serializer, errorMessage, *c.output)
 
@@ -650,8 +653,9 @@ func Run(args []string) (string, error) {
 			publishKwargs  = wampprotocli.StringMapToTypedMap(*c.publishKwArgs)
 		)
 
-		publishMessage := messages.NewPublish(*c.publishRequestID, publishOptions, *c.publishTopic, publishArgs,
-			publishKwargs)
+		arguments, kwargs := wampprotocli.UpdateArgsKwArgsIfEmpty(publishArgs, publishKwargs)
+
+		publishMessage := messages.NewPublish(*c.publishRequestID, publishOptions, *c.publishTopic, arguments, kwargs)
 
 		return serializeMessageAndOutput(*c.serializer, publishMessage, *c.output)
 
@@ -667,7 +671,9 @@ func Run(args []string) (string, error) {
 			eventKwargs  = wampprotocli.StringMapToTypedMap(*c.eventKwArgs)
 		)
 
-		eventMessage := messages.NewEvent(*c.subscriptionID, *c.publishRequestID, eventDetails, eventArgs, eventKwargs)
+		arguments, kwargs := wampprotocli.UpdateArgsKwArgsIfEmpty(eventArgs, eventKwargs)
+
+		eventMessage := messages.NewEvent(*c.subscriptionID, *c.publishRequestID, eventDetails, arguments, kwargs)
 
 		return serializeMessageAndOutput(*c.serializer, eventMessage, *c.output)
 
