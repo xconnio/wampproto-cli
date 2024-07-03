@@ -319,9 +319,9 @@ func TestSignCRAChallenge(t *testing.T) {
 
 func TestVerifyCRASignature(t *testing.T) {
 	const (
-		testCRAKey    = "6339432b4a757771534b667448736141457530754f70337a4a50512f705070477649456677596730726e773d"
+		testCRAKey    = "test"
 		testChallenge = "foobar"
-		testSignature = "AQRrWsTRCROp7o4UUOZPFIa8v3uror6AWSdQ2PaR5jU="
+		testSignature = "8ad86238123bb29fcca4c6fd117831be6d609ae7dc42f153fa047321489277b0"
 	)
 
 	var command = fmt.Sprintf("wampproto auth cra verify-signature %s %s %s", testChallenge, testSignature, testCRAKey)
