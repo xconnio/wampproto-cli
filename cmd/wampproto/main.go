@@ -163,9 +163,13 @@ func parseCmd(args []string) (*cmd, error) {
 		},
 
 		Welcome: &Welcome{
-			welcome:        welcomeCommand,
-			sessionID:      welcomeCommand.Arg("session-id", "WAMP session ID.").Required().Int64(),
-			welcomeDetails: welcomeCommand.Flag("detail", "Welcome details.").Short('d').StringMap(),
+			welcome:           welcomeCommand,
+			sessionID:         welcomeCommand.Arg("session-id", "WAMP session ID.").Required().Int64(),
+			welcomeRoles:      welcomeCommand.Flag("roles", "Client roles.").Strings(),
+			welcomeAuthid:     welcomeCommand.Flag("authid", "Client authid.").String(),
+			welcomeAuthRole:   welcomeCommand.Flag("authrole", "Client authrole.").String(),
+			welcomeAuthMethod: welcomeCommand.Flag("authmethod", "Client authmethod.").String(),
+			welcomeAuthExtra:  welcomeCommand.Flag("authextra", "Additional authentication data.").Short('e').StringMap(),
 		},
 
 		Challenge: &Challenge{
@@ -493,7 +497,18 @@ func Run(args []string) (string, error) {
 		return serializeMessageAndOutput(*c.serializer, helloMessage, *c.output)
 
 	case c.welcome.FullCommand():
-		var details = wampprotocli.StringMapToTypedMap(*c.welcomeDetails)
+		var (
+			roles     = wampprotocli.StringsToTypedList(*c.welcomeRoles)
+			authextra = wampprotocli.StringMapToTypedMap(*c.welcomeAuthExtra)
+		)
+
+		var details = map[string]any{
+			"roles":      roles,
+			"authextra":  authextra,
+			"authrole":   *c.welcomeAuthRole,
+			"authid":     *c.welcomeAuthid,
+			"authmethod": *c.welcomeAuthMethod,
+		}
 
 		welcomeMessage := messages.NewWelcome(*c.sessionID, details)
 
