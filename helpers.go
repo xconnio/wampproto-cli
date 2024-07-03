@@ -97,6 +97,7 @@ func SerializerByName(name string) serializers.Serializer {
 }
 
 func StringsToTypedList(strings []string) (typedList []any) {
+	typedList = make([]any, 0)
 	for _, value := range strings {
 		if number, errNumber := strconv.Atoi(value); errNumber == nil {
 			typedList = append(typedList, number)
