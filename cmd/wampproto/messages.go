@@ -14,9 +14,13 @@ type Hello struct {
 }
 
 type Welcome struct {
-	welcome        *kingpin.CmdClause
-	sessionID      *int64
-	welcomeDetails *map[string]string
+	welcome           *kingpin.CmdClause
+	sessionID         *int64
+	welcomeRoles      *[]string
+	welcomeAuthid     *string
+	welcomeAuthRole   *string
+	welcomeAuthMethod *string
+	welcomeAuthExtra  *map[string]string
 }
 
 type Challenge struct {
