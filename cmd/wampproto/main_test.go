@@ -409,7 +409,7 @@ func TestHelloMessage(t *testing.T) {
 }
 
 func TestWelcomeMessage(t *testing.T) {
-	var command = "wampproto message welcome 1 --roles callee --roles caller --authid foo " +
+	var command = "wampproto message welcome 1 --roles callee=true --roles caller=true --authid foo " +
 		"--authmethod anonymous --authextra ticket=test"
 
 	testMessageCommand(t, command)

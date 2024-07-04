@@ -165,7 +165,7 @@ func parseCmd(args []string) (*cmd, error) {
 		Welcome: &Welcome{
 			welcome:           welcomeCommand,
 			sessionID:         welcomeCommand.Arg("session-id", "WAMP session ID.").Required().Int64(),
-			welcomeRoles:      welcomeCommand.Flag("roles", "Client roles.").Strings(),
+			welcomeRoles:      welcomeCommand.Flag("roles", "Client roles.").StringMap(),
 			welcomeAuthid:     welcomeCommand.Flag("authid", "Client authid.").String(),
 			welcomeAuthRole:   welcomeCommand.Flag("authrole", "Client authrole.").String(),
 			welcomeAuthMethod: welcomeCommand.Flag("authmethod", "Client authmethod.").String(),
@@ -498,7 +498,7 @@ func Run(args []string) (string, error) {
 
 	case c.welcome.FullCommand():
 		var (
-			roles     = wampprotocli.StringsToTypedList(*c.welcomeRoles)
+			roles     = wampprotocli.StringMapToTypedMap(*c.welcomeRoles)
 			authextra = wampprotocli.StringMapToTypedMap(*c.welcomeAuthExtra)
 		)
 
