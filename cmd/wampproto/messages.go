@@ -16,7 +16,7 @@ type Hello struct {
 type Welcome struct {
 	welcome           *kingpin.CmdClause
 	sessionID         *int64
-	welcomeRoles      *[]string
+	welcomeRoles      *map[string]string
 	welcomeAuthid     *string
 	welcomeAuthRole   *string
 	welcomeAuthMethod *string
