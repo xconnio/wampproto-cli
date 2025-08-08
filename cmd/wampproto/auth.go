@@ -25,7 +25,7 @@ type CRA struct {
 	cra *kingpin.CmdClause
 
 	generateCRAChallenge *kingpin.CmdClause
-	craSessionID         *int64
+	craSessionID         *uint64
 	craAuthID            *string
 	craAuthRole          *string
 	craProvider          *string
