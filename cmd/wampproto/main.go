@@ -126,7 +126,7 @@ func parseCmd(args []string) (*cmd, error) {
 			cra: craCommand,
 
 			generateCRAChallenge: generateCRAChallengeCommand,
-			craSessionID:         generateCRAChallengeCommand.Arg("session-id", "WAMP session ID.").Required().Int64(),
+			craSessionID:         generateCRAChallengeCommand.Arg("session-id", "WAMP session ID.").Required().Uint64(),
 			craAuthID:            generateCRAChallengeCommand.Arg("authid", "Auth ID.").Required().String(),
 			craAuthRole:          generateCRAChallengeCommand.Arg("authrole", "Auth role.").Required().String(),
 			craProvider:          generateCRAChallengeCommand.Arg("provider", "Provider name.").Required().String(),
@@ -164,7 +164,7 @@ func parseCmd(args []string) (*cmd, error) {
 
 		Welcome: &Welcome{
 			welcome:           welcomeCommand,
-			sessionID:         welcomeCommand.Arg("session-id", "WAMP session ID.").Required().Int64(),
+			sessionID:         welcomeCommand.Arg("session-id", "WAMP session ID.").Required().Uint64(),
 			welcomeRoles:      welcomeCommand.Flag("roles", "Client roles.").StringMap(),
 			welcomeAuthid:     welcomeCommand.Flag("authid", "Client authid.").String(),
 			welcomeAuthRole:   welcomeCommand.Flag("authrole", "Client authrole.").String(),
@@ -195,9 +195,9 @@ func parseCmd(args []string) (*cmd, error) {
 
 		Error: &Error{
 			error:       errorCommand,
-			messageType: errorCommand.Arg("message-type", "The ID of message associated with the error.").Required().Int64(),
+			messageType: errorCommand.Arg("message-type", "The ID of message associated with the error.").Required().Uint64(),
 			errorRequestID: errorCommand.Arg("request-id", "The ID of the request that resulted in the error").
-				Required().Int64(),
+				Required().Uint64(),
 			errorDetails: errorCommand.Flag("detail", "Additional error data.").Short('d').StringMap(),
 			errorUri:     errorCommand.Arg("uri", "Error URI.").Required().String(),
 			errorArgs:    errorCommand.Arg("args", "Arguments of error.").Strings(),
@@ -206,13 +206,13 @@ func parseCmd(args []string) (*cmd, error) {
 
 		Cancel: &Cancel{
 			cancel:          cancelCommand,
-			cancelRequestID: cancelCommand.Arg("request-id", "The ID of request to cancel.").Required().Int64(),
+			cancelRequestID: cancelCommand.Arg("request-id", "The ID of request to cancel.").Required().Uint64(),
 			cancelOptions:   cancelCommand.Flag("option", "Cancel options.").Short('o').StringMap(),
 		},
 
 		Interrupt: &Interrupt{
 			interrupt:          interruptCommand,
-			interruptRequestID: interruptCommand.Arg("request-id", "The ID of request to interrupt.").Required().Int64(),
+			interruptRequestID: interruptCommand.Arg("request-id", "The ID of request to interrupt.").Required().Uint64(),
 			interruptOptions:   interruptCommand.Flag("option", "Interrupt options.").Short('o').StringMap(),
 		},
 
@@ -224,7 +224,7 @@ func parseCmd(args []string) (*cmd, error) {
 
 		Call: &Call{
 			call:          callCommand,
-			callRequestID: callCommand.Arg("request-id", "Call request ID.").Required().Int64(),
+			callRequestID: callCommand.Arg("request-id", "Call request ID.").Required().Uint64(),
 			callURI:       callCommand.Arg("procedure", "Procedure to call.").Required().String(),
 			callArgs:      callCommand.Arg("args", "Arguments for the call.").Strings(),
 			callKwargs:    callCommand.Flag("kwarg", "Keyword argument for the call.").Short('k').StringMap(),
@@ -233,7 +233,7 @@ func parseCmd(args []string) (*cmd, error) {
 
 		Result: &Result{
 			result:          resultCommand,
-			resultRequestID: resultCommand.Arg("request-id", "Result request ID.").Required().Int64(),
+			resultRequestID: resultCommand.Arg("request-id", "Result request ID.").Required().Uint64(),
 			resultDetails:   resultCommand.Flag("detail", "Result details.").Short('d').StringMap(),
 			resultArgs:      resultCommand.Arg("args", "Result Arguments").Strings(),
 			resultKwargs:    resultCommand.Flag("kwarg", "Result KW Arguments.").Short('k').StringMap(),
@@ -241,21 +241,21 @@ func parseCmd(args []string) (*cmd, error) {
 
 		Register: &Register{
 			register:     registerCommand,
-			regRequestID: registerCommand.Arg("request-id", "Request request ID.").Required().Int64(),
+			regRequestID: registerCommand.Arg("request-id", "Request request ID.").Required().Uint64(),
 			regProcedure: registerCommand.Arg("procedure", "Procedure to register.").Required().String(),
 			regOptions:   registerCommand.Flag("option", "Register options.").Short('o').StringMap(),
 		},
 
 		Registered: &Registered{
 			registered:          registeredCommand,
-			registeredRequestID: registeredCommand.Arg("request-id", "Registered request ID.").Required().Int64(),
-			registrationID:      registeredCommand.Arg("registration-id", "Registration ID.").Required().Int64(),
+			registeredRequestID: registeredCommand.Arg("request-id", "Registered request ID.").Required().Uint64(),
+			registrationID:      registeredCommand.Arg("registration-id", "Registration ID.").Required().Uint64(),
 		},
 
 		Invocation: &Invocation{
 			invocation:        invocationCommand,
-			invRequestID:      invocationCommand.Arg("request-id", "Invocation request ID.").Required().Int64(),
-			invRegistrationID: invocationCommand.Arg("registration-id", "Invocation registration ID.").Required().Int64(),
+			invRequestID:      invocationCommand.Arg("request-id", "Invocation request ID.").Required().Uint64(),
+			invRegistrationID: invocationCommand.Arg("registration-id", "Invocation registration ID.").Required().Uint64(),
 			invDetails:        invocationCommand.Flag("detail", "Invocation details.").Short('d').StringMap(),
 			invArgs:           invocationCommand.Arg("args", "Invocation arguments.").Strings(),
 			invKwArgs:         invocationCommand.Flag("kwarg", "Invocation KW arguments.").Short('k').StringMap(),
@@ -263,7 +263,7 @@ func parseCmd(args []string) (*cmd, error) {
 
 		Yield: &Yield{
 			yield:          yieldCommand,
-			yieldRequestID: yieldCommand.Arg("request-id", "Yield request ID.").Required().Int64(),
+			yieldRequestID: yieldCommand.Arg("request-id", "Yield request ID.").Required().Uint64(),
 			yieldOptions:   yieldCommand.Flag("option", "Yield options.").Short('o').StringMap(),
 			yieldArgs:      yieldCommand.Arg("args", "Yield arguments.").Strings(),
 			yieldKwArgs:    yieldCommand.Flag("kwarg", "Yield KW arguments.").Short('k').StringMap(),
@@ -271,31 +271,31 @@ func parseCmd(args []string) (*cmd, error) {
 
 		UnRegister: &UnRegister{
 			unRegister:          UnRegisterCommand,
-			unRegRequestID:      UnRegisterCommand.Arg("request-id", "UnRegister request ID.").Required().Int64(),
-			unRegRegistrationID: UnRegisterCommand.Arg("registration-id", "UnRegister registration ID.").Required().Int64(),
+			unRegRequestID:      UnRegisterCommand.Arg("request-id", "UnRegister request ID.").Required().Uint64(),
+			unRegRegistrationID: UnRegisterCommand.Arg("registration-id", "UnRegister registration ID.").Required().Uint64(),
 		},
 
 		UnRegistered: &UnRegistered{
 			unRegistered:          UnRegisteredCommand,
-			UnRegisteredRequestID: UnRegisteredCommand.Arg("request-id", "UnRegistered request ID.").Required().Int64(),
+			UnRegisteredRequestID: UnRegisteredCommand.Arg("request-id", "UnRegistered request ID.").Required().Uint64(),
 		},
 
 		Subscribe: &Subscribe{
 			subscribe:          subscribeCommand,
-			subscribeRequestID: subscribeCommand.Arg("request-id", "Subscribe request ID.").Required().Int64(),
+			subscribeRequestID: subscribeCommand.Arg("request-id", "Subscribe request ID.").Required().Uint64(),
 			subscribeTopic:     subscribeCommand.Arg("topic", "Topic to subscribe.").Required().String(),
 			subscribeOptions:   subscribeCommand.Flag("option", "Subscribe options.").Short('o').StringMap(),
 		},
 
 		Subscribed: &Subscribed{
 			subscribed:          subscribedCommand,
-			subscribedRequestID: subscribedCommand.Arg("request-id", "Subscribed request ID.").Required().Int64(),
-			subscriptionID:      subscribedCommand.Arg("subscription-id", "Subscription ID.").Required().Int64(),
+			subscribedRequestID: subscribedCommand.Arg("request-id", "Subscribed request ID.").Required().Uint64(),
+			subscriptionID:      subscribedCommand.Arg("subscription-id", "Subscription ID.").Required().Uint64(),
 		},
 
 		Publish: &Publish{
 			publish:          publishCommand,
-			publishRequestID: publishCommand.Arg("request-id", "Publish request ID.").Required().Int64(),
+			publishRequestID: publishCommand.Arg("request-id", "Publish request ID.").Required().Uint64(),
 			publishTopic:     publishCommand.Arg("topic", "Publish topic.").Required().String(),
 			publishOptions:   publishCommand.Flag("option", "Publish options.").Short('o').StringMap(),
 			publishArgs:      publishCommand.Arg("args", "Publish arguments.").Strings(),
@@ -304,14 +304,14 @@ func parseCmd(args []string) (*cmd, error) {
 
 		Published: &Published{
 			published:          publishedCommand,
-			publishedRequestID: publishedCommand.Arg("request-id", "Published request ID.").Required().Int64(),
-			publicationID:      publishedCommand.Arg("publication-id", "Publication ID.").Required().Int64(),
+			publishedRequestID: publishedCommand.Arg("request-id", "Published request ID.").Required().Uint64(),
+			publicationID:      publishedCommand.Arg("publication-id", "Publication ID.").Required().Uint64(),
 		},
 
 		Event: &Event{
 			event:               eventCommand,
-			eventSubscriptionID: eventCommand.Arg("subscription-id", "Event subscription ID.").Required().Int64(),
-			eventPublicationID:  eventCommand.Arg("publication-id", "Event publication ID.").Required().Int64(),
+			eventSubscriptionID: eventCommand.Arg("subscription-id", "Event subscription ID.").Required().Uint64(),
+			eventPublicationID:  eventCommand.Arg("publication-id", "Event publication ID.").Required().Uint64(),
 			eventDetails:        eventCommand.Flag("detail", "Event details.").Short('d').StringMap(),
 			eventArgs:           eventCommand.Arg("args", "Event arguments.").Strings(),
 			eventKwArgs:         eventCommand.Flag("kwarg", "Event Keyword arguments.").Short('k').StringMap(),
@@ -319,14 +319,14 @@ func parseCmd(args []string) (*cmd, error) {
 
 		UnSubscribe: &UnSubscribe{
 			unSubscribe:          unSubscribeCommand,
-			unSubscribeRequestID: unSubscribeCommand.Arg("request-id", "UnSubscribe request ID.").Required().Int64(),
+			unSubscribeRequestID: unSubscribeCommand.Arg("request-id", "UnSubscribe request ID.").Required().Uint64(),
 			unSubscribeSubscriptionID: unSubscribeCommand.Arg("subscription-id", "UnSubscribe subscription ID.").
-				Required().Int64(),
+				Required().Uint64(),
 		},
 
 		UnSubscribed: &UnSubscribed{
 			unSubscribed:          unSubscribedCommand,
-			unSubscribedRequestID: unSubscribedCommand.Arg("request-id", "UnSubscribed request ID.").Required().Int64(),
+			unSubscribedRequestID: unSubscribedCommand.Arg("request-id", "UnSubscribed request ID.").Required().Uint64(),
 		},
 	}
 
@@ -634,12 +634,12 @@ func Run(args []string) (string, error) {
 		return serializeMessageAndOutput(*c.serializer, yieldMessage, *c.output)
 
 	case c.unRegister.FullCommand():
-		unRegisterMessage := messages.NewUnRegister(*c.unRegRequestID, *c.unRegRegistrationID)
+		unRegisterMessage := messages.NewUnregister(*c.unRegRequestID, *c.unRegRegistrationID)
 
 		return serializeMessageAndOutput(*c.serializer, unRegisterMessage, *c.output)
 
 	case c.unRegistered.FullCommand():
-		unRegisteredMessage := messages.NewUnRegistered(*c.UnRegisteredRequestID)
+		unRegisteredMessage := messages.NewUnregistered(*c.UnRegisteredRequestID)
 
 		return serializeMessageAndOutput(*c.serializer, unRegisteredMessage, *c.output)
 
@@ -687,12 +687,12 @@ func Run(args []string) (string, error) {
 		return serializeMessageAndOutput(*c.serializer, eventMessage, *c.output)
 
 	case c.unSubscribe.FullCommand():
-		unSubscribeMessage := messages.NewUnSubscribe(*c.unSubscribeRequestID, *c.unSubscribeSubscriptionID)
+		unSubscribeMessage := messages.NewUnsubscribe(*c.unSubscribeRequestID, *c.unSubscribeSubscriptionID)
 
 		return serializeMessageAndOutput(*c.serializer, unSubscribeMessage, *c.output)
 
 	case c.unSubscribed.FullCommand():
-		unSubscribedMessage := messages.NewUnSubscribed(*c.unSubscribedRequestID)
+		unSubscribedMessage := messages.NewUnsubscribed(*c.unSubscribedRequestID)
 
 		return serializeMessageAndOutput(*c.serializer, unSubscribedMessage, *c.output)
 
