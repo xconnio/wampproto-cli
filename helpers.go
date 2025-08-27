@@ -9,6 +9,7 @@ import (
 
 	"github.com/xconnio/wampproto-go/serializers"
 	wampprotobuf "github.com/xconnio/wampproto-protobuf/go"
+	wampprotocapnp "github.com/xconnio/wampproto-serializer-capnproto/go"
 )
 
 func HexToBase64(hexStr string) (string, error) {
@@ -92,6 +93,8 @@ func SerializerByName(name string) serializers.Serializer {
 		return &serializers.MsgPackSerializer{}
 	case ProtobufSerializer:
 		return &wampprotobuf.ProtobufSerializer{}
+	case CapnprotoSerializer:
+		return &wampprotocapnp.CapnprotoSerializer{}
 	}
 	return nil
 }

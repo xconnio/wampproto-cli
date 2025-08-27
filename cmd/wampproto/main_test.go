@@ -15,6 +15,7 @@ import (
 	main "github.com/xconnio/wampproto-cli/cmd/wampproto"
 	"github.com/xconnio/wampproto-go/serializers"
 	wampprotobuf "github.com/xconnio/wampproto-protobuf/go"
+	wampprotocapnp "github.com/xconnio/wampproto-serializer-capnproto/go"
 )
 
 func TestRunGenerateChallenge(t *testing.T) {
@@ -388,6 +389,18 @@ func testMessageCommand(t *testing.T, command string) {
 
 		var protobufSerializer = wampprotobuf.ProtobufSerializer{}
 		_, err = protobufSerializer.Deserialize([]byte(unQuotedStr))
+		require.NoError(t, err)
+	})
+
+	t.Run("CapnprotoSerailizer", func(t *testing.T) {
+		output, err := main.Run(strings.Split(command+" --serializer capnproto", " "))
+		require.NoError(t, err)
+
+		unQuotedStr, err := strconv.Unquote(output)
+		require.NoError(t, err)
+
+		var capnprotoSerializer = wampprotocapnp.CapnprotoSerializer{}
+		_, err = capnprotoSerializer.Deserialize([]byte(unQuotedStr))
 		require.NoError(t, err)
 	})
 }
